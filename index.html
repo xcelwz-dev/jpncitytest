@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Japan Prefectures Game</title>
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background-color: #f4f7f6; color: #333; text-align: center; margin: 0; padding: 20px; }
+        h1 { color: #2c3e50; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .btn { padding: 10px 20px; margin: 5px; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; transition: 0.3s; }
+        .btn-primary { background-color: #3498db; color: white; }
+        .btn-primary:hover { background-color: #2980b9; }
+        .btn-region { background-color: #e67e22; color: white; }
+        .btn-region:hover { background-color: #d35400; }
+        
+        .map-container img { max-width: 100%; height: auto; border-radius: 8px; margin-top: 20px; display: none; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-top: 20px; }
+        .card { background: #ecf0f1; padding: 15px; border-radius: 8px; font-weight: bold; border-left: 5px solid #3498db; }
+        .kanji { font-size: 24px; color: #e74c3c; margin-bottom: 5px; }
+        .romaji { font-size: 14px; color: #7f8c8d; }
+        
+        #quiz-area { display: none; margin-top: 20px; }
+        .quiz-question { font-size: 28px; margin: 20px 0; color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>เรียนรู้ 47 จังหวัดญี่ปุ่น 🇯🇵</h1>
+    <button class="btn btn-primary" onclick="showStudyMode()">📖 โหมดเรียนรู้</button>
+    <button class="btn btn-primary" onclick="showQuizMode()">🎮 โหมดทดสอบ</button>
+
+    <!-- พื้นที่สำหรับโหมดเรียนรู้ -->
+    <div id="study-area">
+        <h3>เลือกภูมิภาคเพื่อดูจังหวัด</h3>
+        <div id="region-buttons"></div>
+        <div id="prefecture-list" class="grid"></div>
+        
+        <!-- แผนที่อ้างอิงตำแหน่ง -->
+        <div class="map-container" id="map-ref">
+            <h3>แผนที่อ้างอิงตำแหน่ง</h3>
+            <!-- ระบบจะดึงรูป image_70d7ec.png มาแสดงตรงนี้ -->
+            <img src="image_70d7ec.png" alt="Japan Map" id="japan-map" style="display:inline-block;">
+        </div>
+    </div>
+
+    <!-- พื้นที่สำหรับโหมดทดสอบ -->
+    <div id="quiz-area">
+        <h3>จังหวัดนี้อยู่ภูมิภาคไหน?</h3>
+        <div class="quiz-question" id="quiz-kanji"></div>
+        <div class="romaji" id="quiz-romaji"></div>
+        <div id="quiz-options" class="grid" style="margin-top:20px;"></div>
+        <p id="quiz-result" style="font-weight:bold; margin-top:15px; font-size:18px;"></p>
+        <button class="btn btn-primary" onclick="generateQuiz()" style="margin-top:20px; display:none;" id="next-btn">ข้อต่อไป</button>
+    </div>
+</div>
+
+<script>
+    // ข้อมูลอ้างอิงจากแผนที่
+    const japanData = [
+        { region: "北海道 (Hokkaido)", color: "#ff9999", prefectures: [
+            { id: 1, kanji: "北海道", romaji: "Hokkaido" }
+        ]},
+        { region: "東北 (Tohoku)", color: "#ffff99", prefectures: [
+            { id: 2, kanji: "青森県", romaji: "Aomori" }, { id: 3, kanji: "岩手県", romaji: "Iwate" },
+            { id: 4, kanji: "宮城県", romaji: "Miyagi" }, { id: 5, kanji: "秋田県", romaji: "Akita" },
+            { id: 6, kanji: "山形県", romaji: "Yamagata" }, { id: 7, kanji: "福島県", romaji: "Fukushima" }
+        ]},
+        { region: "関東 (Kanto)", color: "#99ff99", prefectures: [
+            { id: 8, kanji: "茨城県", romaji: "Ibaraki" }, { id: 9, kanji: "栃木県", romaji: "Tochigi" },
+            { id: 10, kanji: "群馬県", romaji: "Gunma" }, { id: 11, kanji: "埼玉県", romaji: "Saitama" },
+            { id: 12, kanji: "千葉県", romaji: "Chiba" }, { id: 13, kanji: "東京都", romaji: "Tokyo" },
+            { id: 14, kanji: "神奈川県", romaji: "Kanagawa" }
+        ]},
+        { region: "中部 (Chubu)", color: "#99ffff", prefectures: [
+            { id: 15, kanji: "新潟県", romaji: "Niigata" }, { id: 16, kanji: "富山県", romaji: "Toyama" },
+            { id: 17, kanji: "石川県", romaji: "Ishikawa" }, { id: 18, kanji: "福井県", romaji: "Fukui" },
+            { id: 19, kanji: "山梨県", romaji: "Yamanashi" }, { id: 20, kanji: "長野県", romaji: "Nagano" },
+            { id: 21, kanji: "岐阜県", romaji: "Gifu" }, { id: 22, kanji: "静岡県", romaji: "Shizuoka" },
+            { id: 23, kanji: "愛知県", romaji: "Aichi" }
+        ]},
+        { region: "近畿 (Kinki / Kansai)", color: "#9999ff", prefectures: [
+            { id: 24, kanji: "三重県", romaji: "Mie" }, { id: 25, kanji: "滋賀県", romaji: "Shiga" },
+            { id: 26, kanji: "京都府", romaji: "Kyoto" }, { id: 27, kanji: "大阪府", romaji: "Osaka" },
+            { id: 28, kanji: "兵庫県", romaji: "Hyogo" }, { id: 29, kanji: "奈良県", romaji: "Nara" },
+            { id: 30, kanji: "和歌山県", romaji: "Wakayama" }
+        ]},
+        { region: "中国 (Chugoku)", color: "#ffb366", prefectures: [
+            { id: 31, kanji: "鳥取県", romaji: "Tottori" }, { id: 32, kanji: "島根県", romaji: "Shimane" },
+            { id: 33, kanji: "岡山県", romaji: "Okayama" }, { id: 34, kanji: "広島県", romaji: "Hiroshima" },
+            { id: 35, kanji: "山口県", romaji: "Yamaguchi" }
+        ]},
+        { region: "四国 (Shikoku)", color: "#e699ff", prefectures: [
+            { id: 36, kanji: "徳島県", romaji: "Tokushima" }, { id: 37, kanji: "香川県", romaji: "Kagawa" },
+            { id: 38, kanji: "愛媛県", romaji: "Ehime" }, { id: 39, kanji: "高知県", romaji: "Kochi" }
+        ]},
+        { region: "九州・沖縄 (Kyushu/Okinawa)", color: "#cccccc", prefectures: [
+            { id: 40, kanji: "福岡県", romaji: "Fukuoka" }, { id: 41, kanji: "佐賀県", romaji: "Saga" },
+            { id: 42, kanji: "長崎県", romaji: "Nagasaki" }, { id: 43, kanji: "熊本県", romaji: "Kumamoto" },
+            { id: 44, kanji: "大分県", romaji: "Oita" }, { id: 45, kanji: "宮崎県", romaji: "Miyazaki" },
+            { id: 46, kanji: "鹿児島県", romaji: "Kagoshima" }, { id: 47, kanji: "沖縄県", romaji: "Okinawa" }
+        ]}
+    ];
+
+    let currentAnswer = "";
+
+    // สร้างปุ่มเลือกภูมิภาค
+    const regionDiv = document.getElementById('region-buttons');
+    japanData.forEach((data, index) => {
+        let btn = document.createElement('button');
+        btn.className = 'btn btn-region';
+        btn.innerText = data.region;
+        btn.onclick = () => showPrefectures(index);
+        regionDiv.appendChild(btn);
+    });
+
+    function showStudyMode() {
+        document.getElementById('study-area').style.display = 'block';
+        document.getElementById('quiz-area').style.display = 'none';
+        document.getElementById('prefecture-list').innerHTML = '';
+    }
+
+    function showPrefectures(index) {
+        const listDiv = document.getElementById('prefecture-list');
+        listDiv.innerHTML = '';
+        japanData[index].prefectures.forEach(pref => {
+            let card = `<div class="card" style="border-left-color: ${japanData[index].color}">
+                            <div class="romaji">No. ${pref.id}</div>
+                            <div class="kanji">${pref.kanji}</div>
+                            <div class="romaji">${pref.romaji}</div>
+                        </div>`;
+            listDiv.innerHTML += card;
+        });
+    }
+
+    function showQuizMode() {
+        document.getElementById('study-area').style.display = 'none';
+        document.getElementById('quiz-area').style.display = 'block';
+        generateQuiz();
+    }
+
+    function generateQuiz() {
+        document.getElementById('quiz-result').innerText = '';
+        document.getElementById('next-btn').style.display = 'none';
+        
+        // สุ่มจังหวัด
+        let randomRegion = japanData[Math.floor(Math.random() * japanData.length)];
+        let randomPref = randomRegion.prefectures[Math.floor(Math.random() * randomRegion.prefectures.length)];
+        
+        currentAnswer = randomRegion.region;
+        document.getElementById('quiz-kanji').innerText = randomPref.kanji;
+        document.getElementById('quiz-romaji').innerText = randomPref.romaji;
+
+        // สร้างตัวเลือก
+        const optionsDiv = document.getElementById('quiz-options');
+        optionsDiv.innerHTML = '';
+        
+        // สุ่มตัวเลือกมา 4 ภูมิภาค (ให้มีอันที่ถูก 1 อัน)
+        let options = [randomRegion.region];
+        while(options.length < 4) {
+            let r = japanData[Math.floor(Math.random() * japanData.length)].region;
+            if(!options.includes(r)) options.push(r);
+        }
+        options.sort(() => Math.random() - 0.5); // สลับตำแหน่ง
+
+        options.forEach(opt => {
+            let btn = document.createElement('button');
+            btn.className = 'btn btn-region';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt, btn);
+            optionsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected, btnElement) {
+        let resultText = document.getElementById('quiz-result');
+        let optionsBtns = document.getElementById('quiz-options').getElementsByTagName('button');
+        
+        for(let btn of optionsBtns) { btn.disabled = true; } // ปิดปุ่มหลังตอบ
+
+        if (selected === currentAnswer) {
+            resultText.innerText = "✅ ถูกต้อง! เก่งมาก!";
+            resultText.style.color = "green";
+            btnElement.style.backgroundColor = "green";
+        } else {
+            resultText.innerText = `❌ ผิดครับ! คำตอบที่ถูกคือ: ${currentAnswer}`;
+            resultText.style.color = "red";
+            btnElement.style.backgroundColor = "red";
+        }
+        document.getElementById('next-btn').style.display = 'inline-block';
+    }
+</script>
+
+</body>
+</html>
