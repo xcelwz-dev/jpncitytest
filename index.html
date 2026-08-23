@@ -64,8 +64,8 @@
         .filter-btn .kanji { font-size: 16px; font-weight: 600; margin-bottom: 2px; }
         .filter-btn .romaji { font-size: 11px; opacity: 0.9; }
 
-        /* ================= ระบบแผนที่ & ลากขยับ & ซูม ================= */
-        .map-wrapper { position: relative; width: 100%; height: 500px; border-radius: var(--radius); background: var(--bg-page); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; touch-action: none; /* ห้ามมือถือเลื่อนหน้าจอเวลาถูแผนที่ */ }
+        /* ================= ระบบแผนที่ & ซูม ================= */
+        .map-wrapper { position: relative; width: 100%; height: 500px; border-radius: var(--radius); background: var(--bg-page); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; touch-action: none; }
         
         .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
         .zoom-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); width: 35px; height: 35px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -80,13 +80,20 @@
 
         /* ================= โหมดท่องจำ ================= */
         #flashcard-area { display: none; text-align: center; padding: 10px 0; }
-        .fc-container { perspective: 1000px; width: 100%; max-width: 340px; height: 440px; margin: 0 auto 25px; }
+        .fc-header { display: flex; justify-content: space-between; align-items: center; max-width: 340px; margin: 0 auto 15px; }
+        .undo-btn { background: var(--bg-card); border: 1px solid var(--border); padding: 5px 12px; border-radius: 10px; cursor: pointer; color: var(--text-main); font-family: inherit; font-size: 13px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); display: none; }
+        .undo-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        .fc-container { perspective: 1000px; width: 100%; max-width: 340px; height: 440px; margin: 0 auto 20px; }
         .fc-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); cursor: pointer; }
         .fc-card.flipped { transform: rotateY(180deg); }
         .fc-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: var(--radius); display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--bg-card); border: 1px solid var(--border); box-shadow: var(--shadow); }
         .fc-back { transform: rotateY(180deg); padding: 25px; }
         
-        .btn-ans { padding: 15px 35px; border-radius: 16px; border: none; font-size: 16px; font-weight: 500; cursor: pointer; color: white; font-family: inherit;}
+        .fc-actions { display: flex; justify-content: center; gap: 15px; opacity: 0; pointer-events: none; transition: 0.3s; margin-top: 15px;}
+        .fc-actions.show { opacity: 1; pointer-events: auto; }
+        .btn-ans { padding: 15px 35px; border-radius: 16px; border: none; font-size: 16px; font-weight: 500; cursor: pointer; color: white; font-family: inherit; box-shadow: 0 4px 15px rgba(0,0,0,0.1);}
+        .btn-ans:hover { transform: translateY(-2px); }
 
         /* ================= Modal ================= */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; }
@@ -153,9 +160,14 @@
         <div class="pref-grid" id="pref-grid"></div>
     </div>
 
-    <!-- ================= โหมดท่องจำ ================= -->
+    <!-- ================= โหมดท่องจำ (พร้อมปุ่มย้อนกลับ) ================= -->
     <div id="flashcard-area">
-        <div id="fc-progress" style="color: var(--text-muted); margin-bottom: 20px;"></div>
+        <div class="fc-header">
+            <div id="fc-progress" style="color: var(--text-muted); font-size: 14px;"></div>
+            <!-- ปุ่ม Undo ที่เพิ่มเข้ามา -->
+            <button class="undo-btn" id="fc-undo-btn" onclick="undoCard(event)">↩ ย้อนกลับ</button>
+        </div>
+        
         <div id="fc-completed" style="display:none; padding: 40px 0;">
             <h2 style="font-size: 50px; margin: 0;">🎉</h2>
             <h3>ท่องจำจบแล้ว!</h3>
@@ -176,9 +188,11 @@
                 </div>
             </div>
         </div>
-        <div style="display:flex; justify-content:center; gap:15px; opacity:0; pointer-events:none;" id="fc-actions">
-            <button class="btn-ans" style="background: var(--danger);" onclick="ansCard(false, event)">จำไม่ได้</button>
-            <button class="btn-ans" style="background: var(--success);" onclick="ansCard(true, event)">จำได้แล้ว</button>
+        
+        <!-- แก้บัคปุ่มกดไม่ได้ โดยการเอาสไตล์ออกให้ CSS ทำงานแทน -->
+        <div class="fc-actions" id="fc-actions">
+            <button class="btn-ans" style="background: var(--danger);" onclick="ansCard(false, event)">จำไม่ได้ ❌</button>
+            <button class="btn-ans" style="background: var(--success);" onclick="ansCard(true, event)">จำได้แล้ว ✅</button>
         </div>
     </div>
 
@@ -263,7 +277,6 @@
             map.style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
         }
 
-        // --- ลากขยับ (Mouse) ---
         wrapper.addEventListener('mousedown', (e) => {
             s.panning = true;
             s.startX = e.clientX - s.x;
@@ -279,7 +292,6 @@
             applyTransform();
         });
 
-        // --- ลากขยับ (Touch มือถือ) ---
         wrapper.addEventListener('touchstart', (e) => {
             if(e.touches.length === 1) {
                 s.panning = true;
@@ -295,20 +307,17 @@
             applyTransform();
         });
 
-        // --- ซูมด้วย Scroll Mouse ---
         wrapper.addEventListener('wheel', (e) => {
             e.preventDefault(); 
             const zoomStep = 0.15;
-            if (e.deltaY < 0) s.scale += zoomStep; // ซูมเข้า
-            else s.scale -= zoomStep; // ซูมออก
-
+            if (e.deltaY < 0) s.scale += zoomStep; 
+            else s.scale -= zoomStep; 
             s.scale = Math.min(Math.max(1, s.scale), 4);
-            if (s.scale === 1) { s.x = 0; s.y = 0; } // คืนค่ากลางถ้าซูมสุด
+            if (s.scale === 1) { s.x = 0; s.y = 0; } 
             applyTransform(true);
         }, { passive: false });
     }
 
-    // ปุ่มควบคุมซูม
     function btnZoom(step, mapId) {
         let s = mapStates[mapId];
         s.scale += step;
@@ -325,7 +334,7 @@
         document.getElementById(mapId).style.transform = `translate(0px, 0px) scale(1)`;
     }
 
-    // ================= ตัวแปรหลัก & เริ่มต้น =================
+    // ================= เริ่มต้นระบบ =================
     let currentFilterIdx = -1;
     let currentDisplayList = []; 
     let currentModalIndex = 0;
@@ -335,8 +344,6 @@
         renderFilters('region-filters', selectStudyFilter);
         renderFilters('game-filters', startGame);
         selectStudyFilter(-1);
-        
-        // เปิดระบบลาก-ซูม ทันทีที่โหลดเสร็จ
         enablePanZoom('study-map-wrapper', 'japan-map-div');
         enablePanZoom('game-map-wrapper', 'game-map-div');
     });
@@ -365,7 +372,6 @@
     function renderFilters(containerId, callback) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
-        
         let btnAll = document.createElement('div');
         btnAll.className = 'filter-btn active';
         btnAll.innerHTML = `<div class="kanji">ทั่วประเทศ</div><div class="romaji">All Japan</div>`;
@@ -391,11 +397,8 @@
         currentDisplayList = [];
         japanData.forEach((reg, rIdx) => {
             if (idx !== -1 && idx !== rIdx) return;
-            reg.prefectures.forEach(pref => {
-                currentDisplayList.push({ pref, reg });
-            });
+            reg.prefectures.forEach(pref => { currentDisplayList.push({ pref, reg }); });
         });
-
         drawMainMap(idx);
         renderPrefectureList();
         document.getElementById('grid-title').innerText = idx === -1 ? 'ทุกจังหวัด (47)' : `ภูมิภาค ${japanData[idx].thai} (${japanData[idx].prefectures.length} จังหวัด)`;
@@ -421,18 +424,11 @@
         const emptyColor = isDark ? '#2d3238' : '#e8ecf1';
         const colors = ['#ff7675', '#f3a683', '#55efc4', '#74b9ff', '#a29bfe', '#e17055', '#fd79a8', '#b2bec3'];
 
-        let options = {
-            region: 'JP', resolution: 'provinces',
-            colorAxis: { values: [0, 1, 2, 3, 4, 5, 6, 7, 8], colors: [emptyColor, ...colors] },
-            backgroundColor: 'transparent', datalessRegionColor: emptyColor, legend: 'none',
-            tooltip: { textStyle: { fontName: 'Kanit', fontSize: 14 } }
-        };
-
+        let options = { region: 'JP', resolution: 'provinces', colorAxis: { values: [0, 1, 2, 3, 4, 5, 6, 7, 8], colors: [emptyColor, ...colors] }, backgroundColor: 'transparent', datalessRegionColor: emptyColor, legend: 'none', tooltip: { textStyle: { fontName: 'Kanit', fontSize: 14 } } };
         let chart = new google.visualization.GeoChart(document.getElementById('japan-map-div'));
         google.visualization.events.addListener(chart, 'select', () => {
             let sel = chart.getSelection();
             if (sel.length > 0) {
-                // กันบัคคลิกค้างตอนลาก
                 if(mapStates['japan-map-div'].panning) return; 
                 let clickedId = parseInt(mapData.getValue(sel[0].row, 0).replace('JP-', ''));
                 let foundIndex = currentDisplayList.findIndex(item => item.pref.id === clickedId);
@@ -448,16 +444,13 @@
         currentDisplayList.forEach((item, index) => {
             let div = document.createElement('div');
             div.className = 'pref-card';
-            div.innerHTML = `
-                <div class="jp-text" style="font-size:24px; font-weight:700; color:var(--text-main);">${item.pref.kanji}</div>
-                <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">${item.pref.romaji}</div>
-            `;
+            div.innerHTML = `<div class="jp-text" style="font-size:24px; font-weight:700; color:var(--text-main);">${item.pref.kanji}</div><div style="font-size:13px; color:var(--text-muted); margin-top:2px;">${item.pref.romaji}</div>`;
             div.onclick = () => openModal(index);
             grid.appendChild(div);
         });
     }
 
-    // ================= ระบบ Modal (เลื่อนซ้ายขวา) =================
+    // ================= ระบบ Modal =================
     function openModal(index) {
         currentModalIndex = index;
         let data = currentDisplayList[currentModalIndex];
@@ -487,7 +480,6 @@
         document.getElementById('btn-prev-modal').disabled = (currentModalIndex === 0);
         document.getElementById('btn-next-modal').disabled = (currentModalIndex === currentDisplayList.length - 1);
         document.getElementById('pref-modal').style.display = 'flex';
-        
         setTimeout(() => drawMiniMap('modal-map', pref.id, reg.color || '#54a0ff'), 50);
     }
 
@@ -497,45 +489,48 @@
     }
     
     function closeModal(e) {
-        if(e.target.id === 'pref-modal' || e.target.classList.contains('close-btn')) {
-            document.getElementById('pref-modal').style.display = 'none';
-        }
+        if(e.target.id === 'pref-modal' || e.target.classList.contains('close-btn')) document.getElementById('pref-modal').style.display = 'none';
     }
 
     function drawMiniMap(containerId, targetId, color) {
         if (!google.visualization) return;
         let data = new google.visualization.DataTable();
         data.addColumn('string', 'Prefecture'); data.addColumn('number', 'Color');
-        japanData.forEach(reg => reg.prefectures.forEach(p => {
-            data.addRow(['JP-' + String(p.id).padStart(2, '0'), p.id === targetId ? 1 : 0]);
-        }));
+        japanData.forEach(reg => reg.prefectures.forEach(p => { data.addRow(['JP-' + String(p.id).padStart(2, '0'), p.id === targetId ? 1 : 0]); }));
         const empty = document.body.getAttribute('data-theme') === 'dark' ? '#2d3238' : '#e8ecf1';
         let options = { region: 'JP', resolution: 'provinces', colorAxis: { values: [0,1], colors: [empty, color] }, backgroundColor: 'transparent', datalessRegionColor: empty, legend: 'none', enableRegionInteractivity: false, tooltip: { trigger: 'none' } };
         new google.visualization.GeoChart(document.getElementById(containerId)).draw(data, options);
     }
 
-    // ================= โหมดท่องจำ =================
-    let deck = [], isFlipped = false;
+    // ================= โหมดท่องจำ (พร้อมระบบ Undo) =================
+    let deck = [], historyDeck = [], isFlipped = false, currentWord = "";
+
     function initFlashcards(reset = false) {
         if (!reset && localStorage.getItem('jpMasterCards')) {
             deck = JSON.parse(localStorage.getItem('jpMasterCards'));
+            historyDeck = localStorage.getItem('jpMasterHistory') ? JSON.parse(localStorage.getItem('jpMasterHistory')) : [];
             if (deck.length > 0) { showCard(); return; }
         }
-        deck = [];
+        deck = []; historyDeck = [];
         japanData.forEach(reg => reg.prefectures.forEach(pref => deck.push({ pref, reg })));
         deck.sort(() => Math.random() - 0.5);
         localStorage.setItem('jpMasterCards', JSON.stringify(deck));
+        localStorage.setItem('jpMasterHistory', JSON.stringify(historyDeck));
         showCard();
     }
+
     function showCard() {
+        // ปิด/เปิดปุ่มย้อนกลับตามประวัติที่มี
+        document.getElementById('fc-undo-btn').style.display = historyDeck.length > 0 ? 'inline-block' : 'none';
+
         if (deck.length === 0) {
             document.getElementById('fc-container').style.display = 'none';
-            document.getElementById('fc-actions').style.opacity = '0';
-            document.getElementById('fc-actions').style.pointerEvents = 'none';
+            document.getElementById('fc-actions').classList.remove('show');
             document.getElementById('fc-progress').style.display = 'none';
             document.getElementById('fc-completed').style.display = 'block';
             return;
         }
+        
         document.getElementById('fc-container').style.display = 'block';
         document.getElementById('fc-completed').style.display = 'none';
         document.getElementById('fc-progress').style.display = 'block';
@@ -553,16 +548,41 @@
         document.getElementById('fc-actions').classList.remove('show');
         setTimeout(() => drawMiniMap('fc-map', c.pref.id, c.reg.color || '#54a0ff'), 50);
     }
+
     function toggleFlip() {
         if (deck.length === 0) return;
         isFlipped = !isFlipped;
         document.getElementById('fc-card').classList.toggle('flipped', isFlipped);
         document.getElementById('fc-actions').classList.toggle('show', isFlipped);
     }
+
     function ansCard(know, e) {
         e.stopPropagation();
-        if (know) deck.shift(); else deck.push(deck.shift());
+        let current = deck.shift();
+        historyDeck.push({ card: current, know: know });
+        
+        if (!know) deck.push(current); // จำไม่ได้ ย้ายไปต่อท้าย
+        
         localStorage.setItem('jpMasterCards', JSON.stringify(deck));
+        localStorage.setItem('jpMasterHistory', JSON.stringify(historyDeck));
+        showCard();
+    }
+
+    // ฟังก์ชันย้อนกลับการ์ดใบที่แล้ว
+    function undoCard(e) {
+        if (e) e.stopPropagation();
+        if (historyDeck.length === 0) return;
+        
+        let lastAction = historyDeck.pop();
+        if (lastAction.know) {
+            deck.unshift(lastAction.card); // ดึงกลับมาไว้ใบบนสุด
+        } else {
+            deck.pop(); // เอาที่ต่อแถวท้ายสุดออก
+            deck.unshift(lastAction.card); // แล้วเอามาแปะใบบนสุดเหมือนเดิม
+        }
+        
+        localStorage.setItem('jpMasterCards', JSON.stringify(deck));
+        localStorage.setItem('jpMasterHistory', JSON.stringify(historyDeck));
         showCard();
     }
 
@@ -620,7 +640,7 @@
         let options = { region: 'JP', resolution: 'provinces', colorAxis: { values: [0, 1, 2], colors: [hiddenColor, activeColor, correctColor] }, backgroundColor: 'transparent', datalessRegionColor: hiddenColor, legend: 'none', tooltip: { textStyle: { fontName: 'Kanit', fontSize: 16 } } };
         gameChart = new google.visualization.GeoChart(document.getElementById('game-map-div'));
         google.visualization.events.addListener(gameChart, 'select', () => {
-            if (!isGameRunning || mapStates['game-map-div'].panning) return; // กันคลิกตอนกำลังลากเมาส์
+            if (!isGameRunning || mapStates['game-map-div'].panning) return; 
             let sel = gameChart.getSelection();
             if (sel.length > 0) {
                 let clickedPref = mapLookup[sel[0].row];
