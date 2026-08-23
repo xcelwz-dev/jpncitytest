@@ -74,8 +74,21 @@
 
         .map-box { width: 100%; height: 100%; transform-origin: center center; }
 
+        /* ================= ป้ายเลขลำดับ (Number Badge) ================= */
+        .pref-number {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-muted);
+            background: rgba(131, 149, 167, 0.15); /* สีพื้นหลังโปร่งแสงจางๆ */
+            padding: 3px 8px;
+            border-radius: 8px;
+        }
+
         .pref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
-        .pref-card { background: var(--bg-page); border: 1px solid transparent; border-radius: 16px; padding: 20px 15px; text-align: center; cursor: pointer; }
+        .pref-card { position: relative; background: var(--bg-page); border: 1px solid transparent; border-radius: 16px; padding: 30px 15px 20px 15px; text-align: center; cursor: pointer; }
         .pref-card:hover { border-color: var(--primary); transform: translateY(-3px); background: var(--bg-card); box-shadow: var(--shadow); }
 
         /* ================= โหมดท่องจำ ================= */
@@ -117,9 +130,9 @@
             h1 { font-size: 24px; }
             .map-wrapper { height: 350px; }
             .pref-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-            .pref-card { padding: 15px 10px; }
+            .pref-card { padding: 25px 10px 15px 10px; }
             .fc-container { height: 380px; max-width: 100%; }
-            .modal-content { padding: 25px 20px; width: 95%; max-height: 95vh; border-radius: 20px; }
+            .modal-content { padding: 30px 20px; width: 95%; max-height: 95vh; border-radius: 20px; }
             .close-btn { top: 10px; right: 15px; }
             .tab-btn { padding: 10px 18px; font-size: 14px; }
             .zoom-controls { top: 10px; right: 10px; }
@@ -160,11 +173,10 @@
         <div class="pref-grid" id="pref-grid"></div>
     </div>
 
-    <!-- ================= โหมดท่องจำ (พร้อมปุ่มย้อนกลับ) ================= -->
+    <!-- ================= โหมดท่องจำ ================= -->
     <div id="flashcard-area">
         <div class="fc-header">
             <div id="fc-progress" style="color: var(--text-muted); font-size: 14px;"></div>
-            <!-- ปุ่ม Undo ที่เพิ่มเข้ามา -->
             <button class="undo-btn" id="fc-undo-btn" onclick="undoCard(event)">↩ ย้อนกลับ</button>
         </div>
         
@@ -177,6 +189,9 @@
         <div class="fc-container" id="fc-container" onclick="toggleFlip()">
             <div class="fc-card" id="fc-card">
                 <div class="fc-face fc-front">
+                    <!-- ป้ายเลขลำดับในการ์ด -->
+                    <div class="pref-number" id="fc-num" style="top: 15px; left: 15px;"></div>
+                    
                     <div class="jp-text" style="font-size: 65px; font-weight: bold;" id="fc-kanji"></div>
                     <div style="font-size: 20px; color: var(--text-muted);" id="fc-romaji"></div>
                     <button style="margin-top:20px; background:var(--bg-page); border:none; border-radius:50%; width:50px; height:50px; font-size:20px; cursor:pointer;" onclick="playSound(currentWord, event)">🔊</button>
@@ -189,7 +204,6 @@
             </div>
         </div>
         
-        <!-- แก้บัคปุ่มกดไม่ได้ โดยการเอาสไตล์ออกให้ CSS ทำงานแทน -->
         <div class="fc-actions" id="fc-actions">
             <button class="btn-ans" style="background: var(--danger);" onclick="ansCard(false, event)">จำไม่ได้ ❌</button>
             <button class="btn-ans" style="background: var(--success);" onclick="ansCard(true, event)">จำได้แล้ว ✅</button>
@@ -218,9 +232,11 @@
 <!-- ================= Popup Modal ================= -->
 <div class="modal-overlay" id="pref-modal" onclick="closeModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
+        <!-- ป้ายเลขลำดับใน Modal -->
+        <div class="pref-number" id="modal-num" style="top: 15px; left: 15px;"></div>
         <button class="close-btn" onclick="closeModal(event)">×</button>
         
-        <h2 class="jp-text" id="modal-kanji" style="font-size: 34px; margin: 0 0 5px 0;"></h2>
+        <h2 class="jp-text" id="modal-kanji" style="font-size: 34px; margin: 0 0 5px 0; padding-top: 10px;"></h2>
         <div style="font-size: 16px; color: var(--text-muted); margin-bottom: 5px;">
             <span id="modal-romaji"></span> <span id="modal-thai" style="color:var(--primary); font-weight:500;"></span>
         </div>
@@ -259,7 +275,7 @@
         if(document.getElementById('game-area').style.display !== 'none' && isGameRunning) redrawGameMap();
     }
 
-    // ================= ระบบซูม & ลากเลื่อน (Pan & Zoom) =================
+    // ================= ระบบซูม & ลากเลื่อน =================
     const mapStates = {
         'japan-map-div': { scale: 1, x: 0, y: 0, panning: false, startX: 0, startY: 0 },
         'game-map-div': { scale: 1, x: 0, y: 0, panning: false, startX: 0, startY: 0 }
@@ -271,39 +287,32 @@
         const s = mapStates[mapId];
 
         wrapper.style.cursor = "grab";
-
         function applyTransform(smooth = false) {
             map.style.transition = smooth ? "transform 0.15s ease-out" : "none";
             map.style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
         }
 
         wrapper.addEventListener('mousedown', (e) => {
-            s.panning = true;
-            s.startX = e.clientX - s.x;
-            s.startY = e.clientY - s.y;
+            s.panning = true; s.startX = e.clientX - s.x; s.startY = e.clientY - s.y;
             wrapper.style.cursor = "grabbing";
         });
         wrapper.addEventListener('mouseleave', () => { s.panning = false; wrapper.style.cursor = "grab"; });
         wrapper.addEventListener('mouseup', () => { s.panning = false; wrapper.style.cursor = "grab"; });
         wrapper.addEventListener('mousemove', (e) => {
             if (!s.panning) return;
-            s.x = e.clientX - s.startX;
-            s.y = e.clientY - s.startY;
+            s.x = e.clientX - s.startX; s.y = e.clientY - s.startY;
             applyTransform();
         });
 
         wrapper.addEventListener('touchstart', (e) => {
             if(e.touches.length === 1) {
-                s.panning = true;
-                s.startX = e.touches[0].clientX - s.x;
-                s.startY = e.touches[0].clientY - s.y;
+                s.panning = true; s.startX = e.touches[0].clientX - s.x; s.startY = e.touches[0].clientY - s.y;
             }
         });
         wrapper.addEventListener('touchend', () => { s.panning = false; });
         wrapper.addEventListener('touchmove', (e) => {
             if (!s.panning || e.touches.length !== 1) return;
-            s.x = e.touches[0].clientX - s.startX;
-            s.y = e.touches[0].clientY - s.startY;
+            s.x = e.touches[0].clientX - s.startX; s.y = e.touches[0].clientY - s.startY;
             applyTransform();
         });
 
@@ -444,7 +453,13 @@
         currentDisplayList.forEach((item, index) => {
             let div = document.createElement('div');
             div.className = 'pref-card';
-            div.innerHTML = `<div class="jp-text" style="font-size:24px; font-weight:700; color:var(--text-main);">${item.pref.kanji}</div><div style="font-size:13px; color:var(--text-muted); margin-top:2px;">${item.pref.romaji}</div>`;
+            // เพิ่มป้ายตัวเลข
+            let pNum = String(item.pref.id).padStart(2, '0');
+            div.innerHTML = `
+                <div class="pref-number">${pNum}</div>
+                <div class="jp-text" style="font-size:24px; font-weight:700; color:var(--text-main); margin-top:2px;">${item.pref.kanji}</div>
+                <div style="font-size:13px; color:var(--text-muted); margin-top:2px;">${item.pref.romaji}</div>
+            `;
             div.onclick = () => openModal(index);
             grid.appendChild(div);
         });
@@ -455,6 +470,9 @@
         currentModalIndex = index;
         let data = currentDisplayList[currentModalIndex];
         let pref = data.pref, reg = data.reg;
+        
+        let pNum = String(pref.id).padStart(2, '0');
+        document.getElementById('modal-num').innerText = pNum;
 
         document.getElementById('modal-kanji').innerText = pref.kanji;
         document.getElementById('modal-romaji').innerText = pref.romaji;
@@ -502,7 +520,7 @@
         new google.visualization.GeoChart(document.getElementById(containerId)).draw(data, options);
     }
 
-    // ================= โหมดท่องจำ (พร้อมระบบ Undo) =================
+    // ================= โหมดท่องจำ =================
     let deck = [], historyDeck = [], isFlipped = false, currentWord = "";
 
     function initFlashcards(reset = false) {
@@ -520,7 +538,6 @@
     }
 
     function showCard() {
-        // ปิด/เปิดปุ่มย้อนกลับตามประวัติที่มี
         document.getElementById('fc-undo-btn').style.display = historyDeck.length > 0 ? 'inline-block' : 'none';
 
         if (deck.length === 0) {
@@ -537,6 +554,8 @@
         
         let c = deck[0];
         currentWord = c.pref.kanji;
+        
+        document.getElementById('fc-num').innerText = String(c.pref.id).padStart(2, '0');
         document.getElementById('fc-kanji').innerText = c.pref.kanji;
         document.getElementById('fc-romaji').innerText = c.pref.romaji;
         document.getElementById('fc-thai').innerText = c.pref.thai || '';
@@ -560,27 +579,22 @@
         e.stopPropagation();
         let current = deck.shift();
         historyDeck.push({ card: current, know: know });
-        
-        if (!know) deck.push(current); // จำไม่ได้ ย้ายไปต่อท้าย
-        
+        if (!know) deck.push(current); 
         localStorage.setItem('jpMasterCards', JSON.stringify(deck));
         localStorage.setItem('jpMasterHistory', JSON.stringify(historyDeck));
         showCard();
     }
 
-    // ฟังก์ชันย้อนกลับการ์ดใบที่แล้ว
     function undoCard(e) {
         if (e) e.stopPropagation();
         if (historyDeck.length === 0) return;
-        
         let lastAction = historyDeck.pop();
         if (lastAction.know) {
-            deck.unshift(lastAction.card); // ดึงกลับมาไว้ใบบนสุด
+            deck.unshift(lastAction.card); 
         } else {
-            deck.pop(); // เอาที่ต่อแถวท้ายสุดออก
-            deck.unshift(lastAction.card); // แล้วเอามาแปะใบบนสุดเหมือนเดิม
+            deck.pop(); 
+            deck.unshift(lastAction.card); 
         }
-        
         localStorage.setItem('jpMasterCards', JSON.stringify(deck));
         localStorage.setItem('jpMasterHistory', JSON.stringify(historyDeck));
         showCard();
