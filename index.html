@@ -3,158 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Japan Prefectures Pro</title>
+    <title>Japan Prefectures Premium</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-    <!-- ดึงข้อมูลจากไฟล์ data.js ที่เราแยกไว้ -->
     <script src="data.js"></script>
     
     <style>
-        /* ================= UI มินิมอล & ตัวแปรสี ================= */
+        /* ================= ธีมสว่าง / มืด ================= */
         :root {
-            --bg: #f5f7fa;
-            --surface: #ffffff;
-            --text: #2d3436;
-            --text-light: #8395a7;
-            --border: #eaeeec;
-            --primary: #4a69bd;
-            --shadow: 0 10px 30px rgba(0,0,0,0.04);
-            --radius: 20px;
+            --bg-page: #f0f2f5;
+            --bg-surface: #ffffff;
+            --text-main: #1e272e;
+            --text-muted: #808e9b;
+            --border: #d2dae2;
+            --primary: #3c40c6;
+            --shadow: 0 8px 30px rgba(0,0,0,0.05);
+            --map-empty: #ecf0f1;
         }
 
-        body.dark-mode {
-            --bg: #121212;
-            --surface: #1e1e1e;
-            --text: #f5f6fa;
-            --text-light: #718093;
+        [data-theme="dark"] {
+            --bg-page: #121212;
+            --bg-surface: #1e1e1e;
+            --text-main: #f5f6fa;
+            --text-muted: #7f8fa6;
             --border: #2f3640;
-            --primary: #6a89cc;
-            --shadow: 0 10px 30px rgba(0,0,0,0.3);
+            --primary: #575fcf;
+            --shadow: 0 8px 30px rgba(0,0,0,0.4);
+            --map-empty: #2d3436;
         }
 
-        * { box-sizing: border-box; transition: background 0.3s, color 0.3s; }
+        * { box-sizing: border-box; transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
         
-        body { font-family: 'Prompt', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; display: flex; justify-content: center; }
+        body { font-family: 'Prompt', sans-serif; background: var(--bg-page); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; }
         .jp-text { font-family: 'Noto Sans JP', sans-serif; }
 
-        .container { width: 100%; max-width: 850px; background: var(--surface); padding: 35px; border-radius: var(--radius); box-shadow: var(--shadow); position: relative; }
+        .container { width: 100%; max-width: 900px; background: var(--bg-surface); padding: 35px; border-radius: 24px; box-shadow: var(--shadow); position: relative; }
 
-        /* ปุ่มเปลี่ยนโหมด */
-        .theme-btn { position: absolute; top: 25px; right: 25px; background: none; border: none; font-size: 22px; cursor: pointer; color: var(--text); padding: 8px; border-radius: 50%; }
-        .theme-btn:hover { background: var(--border); }
-
-        h1 { text-align: center; font-weight: 600; font-size: 24px; margin-top: 0; margin-bottom: 30px; letter-spacing: 0.5px; }
-
-        /* เมนู Navigation */
-        .nav-tabs { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; }
-        .tab-btn { padding: 10px 22px; border: none; background: transparent; color: var(--text-light); cursor: pointer; font-size: 15px; font-weight: 500; border-radius: 30px; transition: 0.2s; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 15px rgba(74, 105, 189, 0.3); }
-
-        /* ================= แฟลชการ์ด (อัปเกรดใหม่) ================= */
-        #flashcard-area { display: none; text-align: center; }
-        .fc-container { perspective: 1000px; width: 100%; max-width: 320px; height: 420px; margin: 0 auto 25px; }
+        /* ส่วนหัวและปุ่ม */
+        .header-section { text-align: center; margin-bottom: 30px; }
+        h1 { margin: 0 0 10px 0; font-weight: 600; font-size: 26px; }
         
+        .theme-btn { position: absolute; top: 25px; right: 25px; background: var(--bg-page); border: 1px solid var(--border); font-size: 16px; cursor: pointer; color: var(--text-main); padding: 8px 15px; border-radius: 20px; font-family: inherit; font-weight: 500;}
+        .theme-btn:hover { border-color: var(--primary); }
+
+        .nav-tabs { display: flex; justify-content: center; gap: 10px; margin-bottom: 30px; border-bottom: 2px solid var(--bg-page); padding-bottom: 15px;}
+        .tab-btn { padding: 10px 25px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 16px; font-weight: 500; border-radius: 20px;}
+        .tab-btn.active { background: var(--primary); color: #fff; }
+
+        /* ================= แผนที่ & ลิสต์จังหวัด ================= */
+        #japan-map-div { width: 100%; height: 500px; border-radius: 16px; background: transparent; border: 1px solid var(--border); }
+        
+        .pref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px; margin-top: 20px; }
+        .pref-card { background: var(--bg-page); border: 1px solid var(--border); border-radius: 12px; padding: 15px 10px; text-align: center; cursor: pointer; }
+        .pref-card:hover { border-color: var(--primary); transform: translateY(-2px); }
+
+        /* ================= แฟลชการ์ด ================= */
+        #flashcard-area { display: none; text-align: center; }
+        .fc-container { perspective: 1000px; width: 100%; max-width: 340px; height: 440px; margin: 0 auto 25px; }
         .fc-card { width: 100%; height: 100%; position: relative; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1); cursor: pointer; }
         .fc-card.flipped { transform: rotateY(180deg); }
         
-        .fc-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: var(--radius); display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--surface); border: 1px solid var(--border); box-shadow: 0 15px 35px rgba(0,0,0,0.06); }
-        
-        /* ด้านหน้า: คันจิ + โรมาจิ + ปุ่มเสียง */
-        .fc-front .kanji { font-size: 70px; color: var(--text); font-weight: bold; margin-bottom: 10px; }
-        .fc-front .romaji { font-size: 24px; color: var(--text-light); margin-bottom: 25px; }
-        .fc-front .sound-btn { background: #f1f2f6; border: none; border-radius: 50%; width: 50px; height: 50px; font-size: 20px; cursor: pointer; transition: 0.2s; display: flex; justify-content: center; align-items: center; }
-        .fc-front .sound-btn:hover { background: #dfe4ea; transform: scale(1.05); }
-        body.dark-mode .fc-front .sound-btn { background: #2f3640; }
-        body.dark-mode .fc-front .sound-btn:hover { background: #353b48; }
-        
-        /* ด้านหลัง: ภูมิภาค + แผนที่ */
+        .fc-face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 24px; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--bg-surface); border: 2px solid var(--border); box-shadow: var(--shadow); }
         .fc-back { transform: rotateY(180deg); padding: 25px; }
-        .fc-back .region-title { font-size: 16px; color: var(--text-light); margin-bottom: 5px; }
-        .fc-back .region-name { font-size: 26px; font-weight: 600; color: var(--primary); margin-bottom: 20px; }
-        .fc-back img { max-width: 100%; height: 200px; object-fit: contain; }
         
-        /* ปุ่มเฉลย */
         .fc-actions { display: flex; justify-content: center; gap: 15px; opacity: 0; pointer-events: none; transition: 0.3s; }
         .fc-actions.show { opacity: 1; pointer-events: auto; }
-        .btn-ans { padding: 14px 28px; border-radius: 12px; border: none; font-size: 15px; font-weight: 500; cursor: pointer; color: white; font-family: inherit; }
-        .btn-ans.no { background: #ff7675; }
-        .btn-ans.yes { background: #55efc4; color: #2d3436; }
+        .btn-ans { padding: 15px 30px; border-radius: 16px; border: none; font-size: 16px; font-weight: 500; cursor: pointer; color: white; font-family: inherit;}
 
-        /* ================= แผนที่ & อื่นๆ ================= */
-        #japan-map-div { width: 100%; height: 480px; border-radius: var(--radius); margin-top: 20px; background: transparent; }
-        .region-list { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
-        .btn-reg { display: flex; flex-direction: column; align-items: center; background: var(--surface); border: 1px solid var(--border); padding: 8px 16px; border-radius: 12px; cursor: pointer; color: var(--text); min-width: 80px; transition: 0.2s; }
-        .btn-reg:hover { background: var(--border); }
-        .btn-reg .kanji { font-size: 16px; font-weight: bold; }
-        .btn-reg .romaji { font-size: 11px; color: var(--text-light); }
+        .sound-btn { margin-top:15px; background: var(--bg-page); border: 1px solid var(--border); border-radius: 50%; width: 55px; height: 55px; font-size: 22px; cursor: pointer; color: var(--text-main);}
+        .sound-btn:hover { border-color: var(--primary); }
 
+        /* ================= Popup Modal ================= */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--bg-surface); width: 90%; max-width: 400px; border-radius: 24px; padding: 30px; text-align: center; position: relative; box-shadow: 0 20px 40px rgba(0,0,0,0.2); }
+        .close-btn { position: absolute; top: 15px; right: 20px; font-size: 30px; cursor: pointer; border: none; background: none; color: var(--text-muted); }
+        .modal-content h2 { margin: 0 0 5px 0; font-size: 36px; color: var(--text-main); }
+        .modal-info { font-size: 16px; color: var(--text-muted); margin-bottom: 20px;}
+        .modal-info span.thai { display: block; color: var(--primary); font-size: 20px; font-weight: 600; margin-top: 5px; }
+        
+        /* ช่องสำหรับวาดแผนที่ Vector แบบสดๆ */
+        .mini-map-box { width: 100%; height: 200px; background: var(--bg-page); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <button class="theme-btn" onclick="toggleTheme()" id="theme-icon">🌙</button>
-    <h1>Japan Master</h1>
+    <div class="header-section">
+        <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙 Dark</button>
+        <h1>Japan Master Pro</h1>
+    </div>
     
     <div class="nav-tabs">
-        <button class="tab-btn" id="nav-flashcard" onclick="switchTab('flashcard')">🗂️ ท่องจำ</button>
-        <button class="tab-btn active" id="nav-study" onclick="switchTab('study')">🗺️ แผนที่</button>
+        <button class="tab-btn" id="nav-flashcard" onclick="switchTab('flashcard')">🗂️ ท่องจำ (Flashcard)</button>
+        <button class="tab-btn active" id="nav-study" onclick="switchTab('study')">🗺️ เรียนรู้แผนที่</button>
     </div>
 
     <!-- โหมดท่องจำ -->
     <div id="flashcard-area">
-        <p style="color: var(--text-light); margin-bottom: 20px;" id="fc-count">การ์ดคงเหลือ: 47</p>
+        <div id="fc-progress" style="color: var(--primary); margin-bottom: 15px; font-weight: 500;"></div>
         
-        <div class="fc-container" onclick="toggleFlip()">
+        <!-- กรณีท่องจำจบแล้ว -->
+        <div id="fc-completed" style="display:none; padding: 40px 0;">
+            <h2 style="font-size: 40px; margin: 0;">🎉</h2>
+            <h3>ยินดีด้วย! คุณท่องจำครบ 47 จังหวัดแล้ว</h3>
+            <button class="tab-btn active" style="margin-top:20px;" onclick="initFlashcards(true)">🔄 เริ่มเรียนใหม่</button>
+        </div>
+
+        <div class="fc-container" id="fc-container" onclick="toggleFlip()">
             <div class="fc-card" id="fc-card">
-                <!-- ด้านหน้า: คันจิ + โรมาจิ + เสียง -->
+                <!-- ด้านหน้า -->
                 <div class="fc-face fc-front">
-                    <div class="jp-text kanji" id="fc-kanji">東京</div>
-                    <div class="romaji" id="fc-romaji">Tokyo</div>
-                    <!-- ปุ่มเสียง: ใส่ stopPropagation เพื่อไม่ให้การ์ดพลิกตอนกดลำโพง -->
+                    <div class="jp-text" style="font-size: 75px; font-weight: bold; color: var(--text-main);" id="fc-kanji">東京</div>
+                    <div style="font-size: 24px; color: var(--text-muted);" id="fc-romaji">Tokyo</div>
                     <button class="sound-btn" onclick="playSound(event)">🔊</button>
-                    <div style="position:absolute; bottom:15px; font-size:12px; color:var(--text-light);">แตะการ์ดเพื่อดูเฉลย</div>
+                    <div style="position:absolute; bottom:20px; font-size:13px; color:var(--text-muted);">แตะการ์ดเพื่อดูเฉลย</div>
                 </div>
-                <!-- ด้านหลัง: ภูมิภาค + แผนที่ -->
+                <!-- ด้านหลัง -->
                 <div class="fc-face fc-back">
-                    <div class="region-title">ตั้งอยู่ในภูมิภาค</div>
-                    <div class="jp-text region-name" id="fc-region">関東 (Kanto)</div>
-                    <img src="" id="fc-img" alt="Map">
+                    <div style="color: var(--text-muted); font-size: 14px;">ชื่อภาษาไทย</div>
+                    <div style="font-size: 24px; font-weight: bold; color: var(--primary); margin-bottom: 15px;" id="fc-thai">โตเกียว</div>
+                    <div style="color: var(--text-muted); font-size: 14px;">ภูมิภาค (Region)</div>
+                    <div class="jp-text" style="font-size: 22px; font-weight: bold; color: var(--text-main);" id="fc-region">関東 (Kanto)</div>
+                    
+                    <!-- แผนที่แบบ Vector สำหรับ Flashcard -->
+                    <div class="mini-map-box" id="fc-map" style="margin-top: 15px;"></div>
                 </div>
             </div>
         </div>
 
         <div class="fc-actions" id="fc-actions">
-            <button class="btn-ans no" onclick="ansCard(false, event)">จำไม่ได้ ❌</button>
-            <button class="btn-ans yes" onclick="ansCard(true, event)">จำได้แล้ว ✅</button>
+            <button class="btn-ans" style="background: #e74c3c;" onclick="ansCard(false, event)">จำไม่ได้ ❌</button>
+            <button class="btn-ans" style="background: #2ecc71;" onclick="ansCard(true, event)">จำได้แล้ว ✅</button>
         </div>
     </div>
 
-    <!-- โหมดแผนที่ -->
+    <!-- โหมดแผนที่และลิสต์ -->
     <div id="study-area">
-        <div class="region-list" id="region-buttons"></div>
+        <!-- แผนที่หลัก -->
         <div id="japan-map-div"></div>
+        
+        <h3 style="text-align:center; margin-top:40px; margin-bottom: 15px; color: var(--text-main);">รายชื่อทั้ง 47 จังหวัด (กดเพื่อดูรายละเอียด)</h3>
+        <!-- ลิสต์รายชื่อจังหวัด -->
+        <div class="pref-grid" id="pref-grid"></div>
+    </div>
+</div>
+
+<!-- Popup Modal (รายละเอียดจังหวัด) -->
+<div class="modal-overlay" id="pref-modal" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="closeModal(event)">×</button>
+        <h2 class="jp-text" id="modal-kanji"></h2>
+        <div class="modal-info">
+            <span id="modal-romaji"></span>
+            <span class="thai" id="modal-thai"></span>
+        </div>
+        <div style="font-size: 15px; margin-bottom: 15px; color: var(--text-main);">
+            ภูมิภาค: <b id="modal-region" style="color: var(--primary);"></b>
+        </div>
+        
+        <!-- แผนที่ภาพประกอบ (สร้างด้วย Vector สดๆ หมดปัญหาลิงก์เสีย 100%) -->
+        <div class="mini-map-box" id="modal-map"></div>
     </div>
 </div>
 
 <script>
-    // ================= โหมดกลางคืน =================
-    function toggleTheme() {
-        document.body.classList.toggle('dark-mode');
-        document.getElementById('theme-icon').innerText = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
-        if(document.getElementById('study-area').style.display !== 'none') drawMap(currentMapIdx);
+    // ================= ระบบธีม (จำค่าด้วย LocalStorage) =================
+    const savedTheme = localStorage.getItem('jpTheme');
+    if (savedTheme) {
+        document.body.setAttribute('data-theme', savedTheme);
+        document.getElementById('theme-btn').innerText = savedTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
     }
 
-    // ================= ระบบเสียงอ่าน (Web Speech API) =================
-    let currentWord = "東京";
+    function toggleTheme() {
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        const newTheme = isDark ? 'light' : 'dark';
+        document.body.setAttribute('data-theme', newTheme);
+        document.getElementById('theme-btn').innerText = newTheme === 'dark' ? '☀️ Light' : '🌙 Dark';
+        localStorage.setItem('jpTheme', newTheme);
+        
+        // รีเฟรชแผนที่เพื่อให้สีตรงกับธีมใหม่
+        if(document.getElementById('study-area').style.display !== 'none') drawMainMap();
+        if(document.getElementById('flashcard-area').style.display !== 'none' && deck.length > 0) {
+            drawMiniMap('fc-map', deck[0].pref.id, deck[0].reg.color);
+        }
+    }
+
+    // ================= ระบบเสียง =================
+    let currentWord = "";
     function playSound(e) {
-        e.stopPropagation(); // สำคัญ! ป้องกันไม่ให้การ์ดพลิกเวลาจิ้มรูปลำโพง
+        e.stopPropagation(); // ไม่ให้การ์ดพลิก
         const utterance = new SpeechSynthesisUtterance(currentWord);
-        utterance.lang = 'ja-JP'; // ตั้งค่าเป็นเสียงคนญี่ปุ่น
-        utterance.rate = 0.85;    // ปรับความเร็วให้อ่านช้าลงนิดนึงเพื่อการเรียน
+        utterance.lang = 'ja-JP'; utterance.rate = 0.85;
         window.speechSynthesis.speak(utterance);
     }
+
+    // ================= โหลดแผนที่ Google Charts =================
+    google.charts.load('current', { 'packages': ['geochart'] });
+    google.charts.setOnLoadCallback(() => {
+        drawMainMap();
+        renderPrefectureList();
+    });
 
     // ================= สลับหน้าจอ =================
     function switchTab(tab) {
@@ -164,99 +213,160 @@
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
         document.getElementById('nav-' + tab).classList.add('active');
         
-        if(tab === 'study') drawMap(currentMapIdx);
-        if(tab === 'flashcard' && deck.length === 0) initCards();
+        if(tab === 'study') drawMainMap();
+        if(tab === 'flashcard' && deck.length === 0) initFlashcards();
     }
 
-    // ================= ระบบแผนที่ =================
-    let chart, mapData, currentMapIdx = -1;
-    const regionDiv = document.getElementById('region-buttons');
+    // ================= แผนที่หลัก & ลิสต์จังหวัด =================
+    let mapIndexLookup = [];
     
-    let btnAll = document.createElement('div');
-    btnAll.className = 'btn-reg';
-    btnAll.innerHTML = `<div class="kanji">🗺️</div><div class="romaji">Show All</div>`;
-    btnAll.onclick = () => { drawMap(-1); setBtnActive(btnAll, null); };
-    regionDiv.appendChild(btnAll);
-
-    japanData.forEach((data, index) => {
-        let btn = document.createElement('div');
-        btn.className = 'btn-reg';
-        btn.innerHTML = `<div class="kanji">${data.region}</div><div class="romaji">${data.romaji}</div>`;
-        btn.onclick = () => { drawMap(index); setBtnActive(btn, regionColors[index]); };
-        regionDiv.appendChild(btn);
-    });
-
-    function setBtnActive(btn, color) {
-        document.querySelectorAll('.btn-reg').forEach(b => { b.style.background = ''; b.style.borderColor = ''; b.style.color = ''; });
-        if(color) { btn.style.background = color; btn.style.color = '#000'; btn.style.borderColor = color; }
-    }
-    setBtnActive(btnAll, null);
-
-    google.charts.load('current', { 'packages': ['geochart'] });
-    google.charts.setOnLoadCallback(() => drawMap(-1));
-
-    function drawMap(hlIdx) {
+    function drawMainMap() {
         if (!google.visualization) return;
-        currentMapIdx = hlIdx;
-        mapData = new google.visualization.DataTable();
-        mapData.addColumn('string', 'Prefecture'); mapData.addColumn('number', 'Color'); mapData.addColumn({type: 'string', role: 'tooltip'});
-        
+        let mapData = new google.visualization.DataTable();
+        mapData.addColumn('string', 'Prefecture'); 
+        mapData.addColumn('number', 'Color'); 
+        mapData.addColumn({type: 'string', role: 'tooltip'});
+        mapIndexLookup = [];
+
         japanData.forEach((reg, rIdx) => {
             reg.prefectures.forEach(pref => {
-                mapData.addRow(['JP-' + String(pref.id).padStart(2, '0'), (hlIdx === -1 || hlIdx === rIdx) ? (rIdx + 1) : 0, pref.kanji]);
+                mapData.addRow(['JP-' + String(pref.id).padStart(2, '0'), (rIdx + 1), pref.kanji]);
+                mapIndexLookup.push({ pref: pref, reg: reg });
             });
         });
 
-        const isDark = document.body.classList.contains('dark-mode');
-        var options = {
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        let options = {
             region: 'JP', resolution: 'provinces',
-            colorAxis: { values: [0, 1, 2, 3, 4, 5, 6, 7, 8], colors: [isDark ? '#2f3640' : '#eaeeec', ...regionColors] },
-            backgroundColor: 'transparent', datalessRegionColor: isDark ? '#2f3640' : '#eaeeec', legend: 'none'
+            colorAxis: { values: [0, 1, 2, 3, 4, 5, 6, 7, 8], colors: [isDark ? '#2d3436' : '#ecf0f1', ...regionColors] },
+            backgroundColor: 'transparent', datalessRegionColor: isDark ? '#2d3436' : '#ecf0f1', legend: 'none',
+            tooltip: { textStyle: { fontName: 'Prompt', fontSize: 14 } }
         };
-        chart = new google.visualization.GeoChart(document.getElementById('japan-map-div'));
+
+        let chart = new google.visualization.GeoChart(document.getElementById('japan-map-div'));
+        google.visualization.events.addListener(chart, 'select', () => {
+            let sel = chart.getSelection();
+            if (sel.length > 0) openModal(mapIndexLookup[sel[0].row].pref, mapIndexLookup[sel[0].row].reg);
+        });
         chart.draw(mapData, options);
     }
 
-    // ================= ระบบแฟลชการ์ด =================
-    let deck = [], currentCard = 0, isFlipped = false;
+    // สร้างลิสต์รายชื่อ 47 จังหวัดด้านล่าง
+    function renderPrefectureList() {
+        const grid = document.getElementById('pref-grid');
+        grid.innerHTML = '';
+        japanData.forEach(reg => {
+            reg.prefectures.forEach(pref => {
+                let div = document.createElement('div');
+                div.className = 'pref-card';
+                div.innerHTML = `
+                    <div class="jp-text" style="font-size:18px; font-weight:bold;">${pref.kanji}</div>
+                    <div style="font-size:11px; color:var(--text-muted); margin-bottom:3px;">${pref.romaji}</div>
+                    <div style="font-size:13px; color:var(--primary); font-weight:500;">${pref.thai}</div>
+                `;
+                div.onclick = () => openModal(pref, reg);
+                grid.appendChild(div);
+            });
+        });
+    }
 
-    function initCards() {
+    // ================= ระบบภาพ Vector ย่อย (แก้ปัญหาลิงก์พัง) =================
+    function drawMiniMap(containerId, targetPrefId, highlightColor) {
+        if (!google.visualization) return;
+        let data = new google.visualization.DataTable();
+        data.addColumn('string', 'Prefecture'); data.addColumn('number', 'Color');
+        
+        japanData.forEach(reg => reg.prefectures.forEach(p => {
+            data.addRow(['JP-' + String(p.id).padStart(2, '0'), p.id === targetPrefId ? 1 : 0]);
+        }));
+
+        const isDark = document.body.getAttribute('data-theme') === 'dark';
+        const emptyColor = isDark ? '#2f3640' : '#d2dae2'; // สีเทาสำหรับจังหวัดอื่น
+
+        let options = {
+            region: 'JP', resolution: 'provinces',
+            colorAxis: { values: [0, 1], colors: [emptyColor, highlightColor] },
+            backgroundColor: 'transparent', datalessRegionColor: emptyColor, legend: 'none',
+            enableRegionInteractivity: false, tooltip: { trigger: 'none' } // ปิดการกด/โฮเวอร์
+        };
+        let chart = new google.visualization.GeoChart(document.getElementById(containerId));
+        chart.draw(data, options);
+    }
+
+    // ================= Modal =================
+    function openModal(pref, reg) {
+        document.getElementById('modal-kanji').innerText = pref.kanji;
+        document.getElementById('modal-romaji').innerText = pref.romaji;
+        document.getElementById('modal-thai').innerText = pref.thai;
+        document.getElementById('modal-region').innerText = `${reg.region} (${reg.thai})`;
+        
+        document.getElementById('pref-modal').style.display = 'flex';
+        // วาดภาพประกอบแผนที่แบบ Vector ไฮไลท์เฉพาะจังหวัดนั้น (สีตามภูมิภาค)
+        setTimeout(() => drawMiniMap('modal-map', pref.id, reg.color), 50); 
+    }
+    
+    function closeModal(e) {
+        if(e.target.id === 'pref-modal' || e.target.classList.contains('close-btn')) {
+            document.getElementById('pref-modal').style.display = 'none';
+        }
+    }
+
+    // ================= ระบบแฟลชการ์ด (เซฟด้วย LocalStorage) =================
+    let deck = [], isFlipped = false;
+
+    function initFlashcards(forceReset = false) {
+        if (!forceReset) {
+            let savedDeck = localStorage.getItem('jpFlashcards_deck');
+            if (savedDeck) {
+                deck = JSON.parse(savedDeck);
+                if (deck.length > 0) { showCard(); return; }
+            }
+        }
+        
         deck = [];
         japanData.forEach(reg => reg.prefectures.forEach(pref => deck.push({ pref, reg })));
         deck.sort(() => Math.random() - 0.5); // สับไพ่
-        currentCard = 0;
+        saveProgress();
         showCard();
+    }
+
+    function saveProgress() {
+        localStorage.setItem('jpFlashcards_deck', JSON.stringify(deck));
     }
 
     function showCard() {
         if (deck.length === 0) {
-            document.getElementById('fc-kanji').innerText = "🎉";
-            document.getElementById('fc-romaji').innerText = "เก่งมาก! ท่องครบแล้ว";
-            document.querySelector('.sound-btn').style.display = 'none';
+            document.getElementById('fc-container').style.display = 'none';
+            document.getElementById('fc-actions').style.display = 'none';
+            document.getElementById('fc-progress').style.display = 'none';
+            document.getElementById('fc-completed').style.display = 'block';
             return;
         }
+
+        document.getElementById('fc-container').style.display = 'block';
+        document.getElementById('fc-completed').style.display = 'none';
+        document.getElementById('fc-progress').style.display = 'block';
         
-        let c = deck[currentCard];
-        currentWord = c.pref.kanji; // อัปเดตคำอ่านสำหรับระบบเสียง
-        
-        // ด้านหน้า
+        let c = deck[0]; // ดึงใบบนสุดมาทาย
+        currentWord = c.pref.kanji;
+
         document.getElementById('fc-kanji').innerText = c.pref.kanji;
         document.getElementById('fc-romaji').innerText = c.pref.romaji;
-        document.querySelector('.sound-btn').style.display = 'flex';
+        document.getElementById('fc-thai').innerText = c.pref.thai;
+        document.getElementById('fc-region').innerText = `${c.reg.region} (${c.reg.thai})`;
         
-        // ด้านหลัง
-        document.getElementById('fc-region').innerText = `${c.reg.region} (${c.reg.romaji})`;
-        document.getElementById('fc-img').src = c.reg.img; // รูปรอบนี้เป็น SVG โหลดติดแน่นอน
-        
-        document.getElementById('fc-count').innerText = `การ์ดคงเหลือ: ${deck.length} ใบ`;
-        
+        document.getElementById('fc-progress').innerText = `การ์ดคงเหลือ: ${deck.length} ใบ (เรียนไปแล้ว ${47 - deck.length} จังหวัด)`;
+
         isFlipped = false;
         document.getElementById('fc-card').classList.remove('flipped');
         document.getElementById('fc-actions').classList.remove('show');
+        
+        // แอบวาดรูปเฉลยด้านหลังไว้เลย
+        setTimeout(() => drawMiniMap('fc-map', c.pref.id, c.reg.color), 50);
     }
 
     function toggleFlip() {
-        if(deck.length === 0) { initCards(); return; }
+        if (deck.length === 0) return;
         isFlipped = !isFlipped;
         document.getElementById('fc-card').classList.toggle('flipped', isFlipped);
         document.getElementById('fc-actions').classList.toggle('show', isFlipped);
@@ -265,12 +375,16 @@
     function ansCard(know, e) {
         e.stopPropagation();
         if (know) {
-            deck.splice(currentCard, 1); // จำได้ ตัดออก
+            deck.shift(); // จำได้ เอาออกจากกอง
         } else {
-            deck.push(deck.splice(currentCard, 1)[0]); // จำไม่ได้ ย้ายไปต่อท้ายกอง
+            deck.push(deck.shift()); // จำไม่ได้ ย้ายไปต่อแถวท้ายสุด
         }
+        saveProgress();
         showCard();
     }
+
+    // เรียกตอนโหลดเว็บครั้งแรก
+    initFlashcards(false); 
 </script>
 
 </body>
