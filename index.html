@@ -74,25 +74,6 @@
         .map-box { width: 100%; height: 100%; transform-origin: center center; }
         .map-box path { vector-effect: non-scaling-stroke; }
 
-        /* ลบกรอบดำพื้นฐานของ Google Tooltip ทิ้งเพื่อแต่งเอง */
-        div.google-visualization-tooltip {
-            background-color: transparent !important;
-            border: none !important;
-            box-shadow: none !important;
-            pointer-events: none !important;
-            margin-top: -15px;
-        }
-
-        /* ป้ายแจ้งเตือนลอยตัวด้านล่าง (สำหรับมือถือ) */
-        .hover-badge {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(15px);
-            background: var(--bg-card); color: var(--text-main); padding: 12px 25px; border-radius: 30px;
-            font-size: 15px; font-weight: 500; box-shadow: 0 8px 30px rgba(0,0,0,0.15); border: 1px solid var(--border);
-            z-index: 100; pointer-events: none; opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease;
-            display: flex; align-items: center; gap: 12px; white-space: nowrap;
-        }
-        .hover-badge.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
         .pref-number { position: absolute; top: 12px; left: 12px; font-size: 11px; font-weight: 500; color: var(--text-muted); background: rgba(131, 149, 167, 0.15); padding: 3px 8px; border-radius: 8px; }
         .pref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
         .pref-card { position: relative; background: var(--bg-page); border: 1px solid transparent; border-radius: 16px; padding: 30px 15px 20px 15px; text-align: center; cursor: pointer; }
@@ -100,6 +81,7 @@
 
         /* ================= โหมดท่องจำ ================= */
         #flashcard-area { display: none; text-align: center; padding: 10px 0; }
+        
         .fc-setup-box { background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; text-align: left; max-width: 450px; margin: 0 auto 20px; }
         .fc-setup-box label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); font-weight: 500;}
         .fc-setup-box select { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); margin-bottom: 20px; font-family: inherit; font-size: 15px; outline: none; cursor: pointer;}
@@ -127,7 +109,7 @@
         .modal-content { background: var(--bg-card); width: 90%; max-width: 420px; border-radius: var(--radius); padding: 35px; text-align: center; position: relative; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 50px rgba(0,0,0,0.2); }
         .close-btn { position: absolute; top: 15px; right: 20px; font-size: 28px; cursor: pointer; border: none; background: none; color: var(--text-muted); }
         
-        .kanji-stroke-box { display: flex; justify-content: center; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
+        .kanji-stroke-box { display: flex; justify-content: center; gap: 10px; margin: 15px 0; flex-wrap: wrap; }
         .kanji-stroke-img { width: 70px; height: 70px; border: 1px dashed var(--border); border-radius: 10px; padding: 5px; background: var(--bg-page); }
         .jisho-link { display: inline-block; padding: 8px 20px; background: var(--text-main); color: var(--bg-card); border-radius: 20px; text-decoration: none; font-size: 13px; margin-bottom: 20px;}
         
@@ -137,6 +119,7 @@
         .nav-modal-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         
         .mini-map-wrap { position: relative; width: 100%; height: 160px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; background: var(--bg-page); touch-action: none; }
+
         .footer-credit { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 14px; }
 
         /* ================= Responsive ================= */
@@ -183,9 +166,6 @@
         <div class="filter-scroll" id="region-filters"></div>
         
         <div class="map-wrapper" id="study-map-wrapper">
-            <!-- ป้ายแจ้งเตือนลอยตัวด้านล่างแผนที่ สำหรับมือถือ -->
-            <div id="hover-badge-study" class="hover-badge"></div>
-            
             <div class="zoom-controls">
                 <button class="zoom-btn" onclick="btnZoom(0.3, 'japan-map-div', event)">+</button>
                 <button class="zoom-btn" onclick="btnZoom(-0.3, 'japan-map-div', event)">-</button>
@@ -194,16 +174,15 @@
             <div class="map-box" id="japan-map-div"></div>
         </div>
         
-        <div style="margin: 20px 0 10px 0; font-weight: 500; color: var(--text-muted);" id="grid-title">ทุกจังหวัด (47)</div>
+        <div style="margin: 20px 0 10px 0; text-align: center;" id="grid-title"></div>
         <div class="pref-grid" id="pref-grid"></div>
     </div>
 
     <!-- ================= โหมดท่องจำ ================= -->
     <div id="flashcard-area">
-        
         <div class="fc-setup-box" id="fc-setup-area">
             <h3 style="margin-top:0; text-align:center;" id="ui-fc-setup-title">ตั้งค่าแฟลชการ์ด</h3>
-            <label id="ui-fc-lbl-deck">เลือกเด็ค (หมวดหมู่):</label>
+            <label id="ui-fc-lbl-deck">เลือกเด็ค (ภูมิภาค):</label>
             <select id="fc-deck-select"></select>
             
             <label id="ui-fc-lbl-order">ลำดับการแสดงผล:</label>
@@ -242,8 +221,13 @@
                         <button style="margin-top:20px; background:var(--bg-page); border:none; border-radius:50%; width:50px; height:50px; font-size:20px; cursor:pointer;" onclick="playSound(currentWord, event)">🔊</button>
                     </div>
                     <div class="fc-face fc-back">
-                        <div class="jp-text" style="font-size: 26px; font-weight: bold; color: var(--primary); margin-bottom: 5px;" id="fc-back-main"></div>
-                        <div style="font-size: 16px; color: var(--text-main); margin-bottom: 10px;" id="fc-region"></div>
+                        <div style="font-size: 24px; font-weight: 600; color: var(--primary); margin-bottom: 5px;" id="fc-lang-name"></div>
+                        
+                        <!-- ภูมิภาคใน Flashcard (คันจิหลัก คำอ่านรอง) -->
+                        <div style="font-size: 12px; color: var(--text-muted); margin-top: 5px;" id="ui-fc-reg-lbl">📍 ภูมิภาค (Region)</div>
+                        <div class="jp-text" style="font-size: 22px; font-weight: 700; line-height: 1.2; color: var(--text-main);" id="fc-reg-kanji"></div>
+                        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 10px;" id="fc-reg-read"></div>
+
                         <div class="mini-map-wrap" id="fc-map-wrapper" onclick="event.stopPropagation()">
                             <div class="zoom-controls" style="top: 5px; right: 5px;">
                                 <button class="zoom-btn" style="width: 25px; height: 25px; font-size: 14px;" onclick="btnZoom(0.3, 'fc-map-div', event)">+</button>
@@ -272,9 +256,6 @@
         </div>
         
         <div class="map-wrapper" id="game-map-wrapper" style="height: 450px;">
-            <!-- ป้ายแจ้งเตือนลอยตัวด้านล่างแผนที่เกม -->
-            <div id="hover-badge-game" class="hover-badge"></div>
-            
             <div class="zoom-controls">
                 <button class="zoom-btn" onclick="btnZoom(0.3, 'game-map-div', event)">+</button>
                 <button class="zoom-btn" onclick="btnZoom(-0.3, 'game-map-div', event)">-</button>
@@ -299,13 +280,16 @@
         <div style="font-size: 16px; color: var(--text-muted); margin-bottom: 5px;">
             <span id="modal-romaji"></span> <span id="modal-lang-name" style="color:var(--primary); font-weight:500;"></span>
         </div>
-        <div style="font-size: 15px; margin-bottom: 15px;">📍 <b id="modal-region"></b></div>
         
-        <div style="font-size: 13px; color: var(--text-muted); margin-top:15px;" id="ui-modal-stroke">ลำดับเส้นคันจิ (KanjiVG)</div>
+        <!-- ภูมิภาคใน Modal (คันจิหลัก คำอ่านรอง) -->
+        <div style="font-size: 12px; color: var(--text-muted); margin-top: 10px;" id="ui-modal-reg-lbl">📍 ภูมิภาค (Region)</div>
+        <div class="jp-text" style="font-size: 22px; font-weight: 700; line-height: 1.2; color: var(--text-main);" id="modal-reg-kanji"></div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 15px;" id="modal-reg-read"></div>
+        
+        <div style="font-size: 13px; color: var(--text-muted);" id="ui-modal-stroke">ลำดับเส้นคันจิ (KanjiVG)</div>
         <div class="kanji-stroke-box" id="modal-stroke"></div>
         <a href="#" target="_blank" class="jisho-link" id="jisho-link">📖 ดูความหมายลึกซึ้งใน Jisho.org</a>
 
-        <!-- แผนที่ย่อย -->
         <div class="mini-map-wrap" id="modal-map-wrapper">
             <div class="zoom-controls" style="top: 5px; right: 5px;">
                 <button class="zoom-btn" style="width: 25px; height: 25px; font-size: 14px;" onclick="btnZoom(0.3, 'modal-map-div', event)">+</button>
@@ -328,8 +312,9 @@
         th: {
             title: "Japan Prefectures", subtitle: "เรียนรู้แผนที่และท่องจำจังหวัดญี่ปุ่น",
             tabStudy: "🗺️ เรียนรู้", tabFlashcard: "🗂️ ท่องจำ", tabGame: "🎮 เกมแผนที่",
-            filterAll: "ทั่วประเทศ", gridTitleAll: "ทุกจังหวัด (47)", gridTitleReg: (reg, num) => `ภูมิภาค ${reg} (${num} จังหวัด)`,
-            modalStroke: "ลำดับเส้นคันจิ (KanjiVG)", modalJisho: "📖 ดูความหมายลึกซึ้งใน Jisho.org",
+            filterAll: "ทั่วประเทศ", gridTitleAll: "ทุกจังหวัด (47)", 
+            gridTitleReg: (k, r, num) => `<span class="jp-text" style="font-size:24px; font-weight:700; color:var(--text-main);">${k}</span> <span style="font-size:16px; color:var(--text-muted);">(${r})</span> <span style="background:var(--primary); color:#fff; padding:2px 10px; border-radius:12px; font-size:13px; margin-left:8px;">${num} จังหวัด</span>`,
+            modalStroke: "ลำดับเส้นคันจิ (KanjiVG)", modalJisho: "📖 ดูความหมายใน Jisho.org",
             btnPrev: "◀ ก่อนหน้า", btnNext: "ถัดไป ▶", btnUndo: "↩ ย้อนกลับ", btnBackSetup: "⚙️ กลับไปตั้งค่า",
             fcSetupTitle: "ตั้งค่าแฟลชการ์ด", fcDeckLbl: "เลือกเด็ค (ภูมิภาค):", 
             fcOrderLbl: "ลำดับการแสดงผล:", fcOrderRand: "สุ่ม (Random)", fcOrderOrd: "เรียงตามลำดับ (Sequential)",
@@ -337,12 +322,14 @@
             fcProgress: (left) => `เหลืออีก ${left} ใบ`, fcEnd: "ท่องจำจบแล้ว!", btnRestart: "เริ่มใหม่",
             btnNo: "จำไม่ได้ ❌", btnYes: "จำได้แล้ว ✅",
             gamePrompt: "เลือกระดับความยากด้านบน", gamePromptTarget: (k, r) => `📍 จงหา: <span class="jp-text">${k}</span> (${r})`, gameEnd: "🎉 สุดยอด! เติมแผนที่ครบแล้ว",
-            gameHintClick: "คลิกที่ตำแหน่งของจังหวัดนี้บนแผนที่", gameHintRight: "✅ ถูกต้อง!", gameHintWrong: (k) => `❌ ผิด! นั่นคือ ${k}`, gameHintEnd: "เลือกภูมิภาคด้านบนเพื่อเล่นอีกครั้ง"
+            gameHintClick: "คลิกที่ตำแหน่งของจังหวัดนี้บนแผนที่", gameHintRight: "✅ ถูกต้อง!", gameHintWrong: (k) => `❌ ผิด! นั่นคือ ${k}`, gameHintEnd: "เลือกภูมิภาคด้านบนเพื่อเล่นอีกครั้ง",
+            regionLbl: "📍 ภูมิภาค (Region)"
         },
         en: {
             title: "Japan Prefectures", subtitle: "Learn and memorize Japanese prefectures map",
             tabStudy: "🗺️ Study", tabFlashcard: "🗂️ Flashcards", tabGame: "🎮 Map Game",
-            filterAll: "All Regions", gridTitleAll: "All Prefectures (47)", gridTitleReg: (reg, num) => `${reg} Region (${num} Prefectures)`,
+            filterAll: "All Regions", gridTitleAll: "All Prefectures (47)", 
+            gridTitleReg: (k, r, num) => `<span class="jp-text" style="font-size:24px; font-weight:700; color:var(--text-main);">${k}</span> <span style="font-size:16px; color:var(--text-muted);">(${r})</span> <span style="background:var(--primary); color:#fff; padding:2px 10px; border-radius:12px; font-size:13px; margin-left:8px;">${num} Prefectures</span>`,
             modalStroke: "Kanji Stroke Order (KanjiVG)", modalJisho: "📖 View details on Jisho.org",
             btnPrev: "◀ Prev", btnNext: "Next ▶", btnUndo: "↩ Undo", btnBackSetup: "⚙️ Back to Settings",
             fcSetupTitle: "Flashcard Settings", fcDeckLbl: "Select Deck (Region):", 
@@ -351,7 +338,8 @@
             fcProgress: (left) => `${left} cards remaining`, fcEnd: "All Memorized!", btnRestart: "Restart",
             btnNo: "Don't Know ❌", btnYes: "Got it ✅",
             gamePrompt: "Select a region above to start", gamePromptTarget: (k, r) => `📍 Find: <span class="jp-text">${k}</span> (${r})`, gameEnd: "🎉 Awesome! Map completed",
-            gameHintClick: "Click the location on the map", gameHintRight: "✅ Correct!", gameHintWrong: (k) => `❌ Wrong! That is ${k}`, gameHintEnd: "Select a region above to play again"
+            gameHintClick: "Click the location on the map", gameHintRight: "✅ Correct!", gameHintWrong: (k) => `❌ Wrong! That is ${k}`, gameHintEnd: "Select a region above to play again",
+            regionLbl: "📍 Region"
         }
     };
 
@@ -365,7 +353,6 @@
 
     function getPrefName(pref) { return currentLang === 'th' && pref.thai ? pref.thai : pref.romaji; }
     function getRegPronunciation(reg) { return currentLang === 'th' && reg.thai ? reg.thai : (reg.romaji ? reg.romaji.split(' ')[0] : reg.region); }
-    function getRegName(reg) { return currentLang === 'th' && reg.thai ? reg.thai : (reg.romaji ? reg.romaji.split(' ')[0] : reg.region); }
 
     function applyLanguage() {
         document.getElementById('lang-btn').innerText = currentLang === 'th' ? '🇬🇧 EN' : '🇹🇭 TH';
@@ -395,6 +382,8 @@
         document.getElementById('jisho-link').innerText = d.modalJisho;
         document.getElementById('btn-prev-modal').innerText = d.btnPrev;
         document.getElementById('btn-next-modal').innerText = d.btnNext;
+        document.getElementById('ui-modal-reg-lbl').innerText = d.regionLbl;
+        document.getElementById('ui-fc-reg-lbl').innerText = d.regionLbl;
         
         if(!isGameRunning) document.getElementById('game-prompt').innerText = d.gamePrompt;
         
@@ -439,7 +428,7 @@
 
         wrapper.style.cursor = "grab";
         function applyTransform(smooth = false) {
-            map.style.transition = smooth ? "transform 0.15s ease-out" : "none";
+            map.style.transition = smooth ? "transform 0.2s ease-out" : "none";
             map.style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
         }
 
@@ -512,36 +501,32 @@
     }
 
     // ================= Auto-Zoom Helper =================
-    const regionOrigins = {
-        0: "75% 20%", 1: "70% 40%", 2: "70% 55%", 3: "55% 55%",
-        4: "45% 65%", 5: "25% 65%", 6: "30% 75%", 7: "15% 80%"
+    const regionZoomPercent = {
+        0: { scale: 1.8, x: -18, y: 28 }, 1: { scale: 2.2, x: -10, y: 12 }, 2: { scale: 3.2, x: -18, y: -8 }, 3: { scale: 2.8, x: -2,  y: -5 },
+        4: { scale: 3.2, x: 12,  y: -10 }, 5: { scale: 3.0, x: 25,  y: -15 }, 6: { scale: 3.2, x: 18,  y: -25 }, 7: { scale: 2.8, x: 30,  y: -35 }
     };
 
-    function autoZoomRegion(mapId, rIdx) {
+    function autoZoomMap(wrapperId, mapId, rIdx) {
         let mapEl = document.getElementById(mapId);
-        if(!mapEl) return;
+        let wrapperEl = document.getElementById(wrapperId);
+        if(!mapEl || !wrapperEl) return;
+        let s = mapStates[mapId];
         if(rIdx === -1) { 
-            mapEl.style.transition = "transform 0.4s ease";
-            mapEl.style.transform = `scale(1)`;
-            mapEl.style.transformOrigin = "center center";
-            return; 
+            s.scale = 1; s.x = 0; s.y = 0;
+        } else {
+            let params = regionZoomPercent[rIdx];
+            if(params) {
+                let w = wrapperEl.offsetWidth; let h = wrapperEl.offsetHeight;
+                s.scale = params.scale;
+                if (mapId.includes('modal') || mapId.includes('fc')) s.scale = params.scale * 1.4; 
+                let scaleMult = s.scale / params.scale;
+                s.x = w * (params.x / 100) * scaleMult;
+                s.y = h * (params.y / 100) * scaleMult;
+            }
         }
-        mapEl.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
-        mapEl.style.transformOrigin = regionOrigins[rIdx];
-        mapEl.style.transform = `scale(2.5)`; 
-    }
-
-    function autoZoomMiniMap(mapId, rIdx) {
-        let mapEl = document.getElementById(mapId);
-        if(!mapEl) return;
-        if(rIdx === -1) { 
-            mapEl.style.transform = `scale(1)`;
-            mapEl.style.transformOrigin = "center center";
-            return; 
-        }
-        mapEl.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
-        mapEl.style.transformOrigin = regionOrigins[rIdx];
-        mapEl.style.transform = `scale(3.5)`;
+        mapEl.style.transition = "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+        mapEl.style.transformOrigin = "center center"; 
+        mapEl.style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
     }
 
     // ================= เริ่มต้นระบบ =================
@@ -582,15 +567,15 @@
         container.innerHTML = '';
         let btnAll = document.createElement('div');
         btnAll.className = 'filter-btn active';
-        btnAll.innerHTML = `<div class="kanji">${dict[currentLang].filterAll}</div><div class="romaji">All Japan</div>`;
-        btnAll.onclick = () => { setActiveFilter(container, btnAll); callback(-1); autoZoomRegion(containerId.includes('game') ? 'game-map-div' : 'japan-map-div', -1); };
+        btnAll.innerHTML = `<div class="kanji">全国</div><div class="romaji">${dict[currentLang].filterAll}</div>`;
+        btnAll.onclick = () => { setActiveFilter(container, btnAll); callback(-1); autoZoomMap(containerId.includes('game') ? 'game-map-wrapper' : 'study-map-wrapper', containerId.includes('game') ? 'game-map-div' : 'japan-map-div', -1); };
         container.appendChild(btnAll);
 
         japanData.forEach((reg, idx) => {
             let btn = document.createElement('div');
             btn.className = 'filter-btn jp-text';
             btn.innerHTML = `<div class="kanji">${reg.kanji || reg.region.split(' ')[0]}</div><div class="romaji">${getRegPronunciation(reg)}</div>`;
-            btn.onclick = () => { setActiveFilter(container, btn); callback(idx); autoZoomRegion(containerId.includes('game') ? 'game-map-div' : 'japan-map-div', idx); };
+            btn.onclick = () => { setActiveFilter(container, btn); callback(idx); autoZoomMap(containerId.includes('game') ? 'game-map-wrapper' : 'study-map-wrapper', containerId.includes('game') ? 'game-map-div' : 'japan-map-div', idx); };
             container.appendChild(btn);
         });
     }
@@ -609,29 +594,22 @@
         });
         drawMainMap(idx);
         renderPrefectureList();
-        let titleText = idx === -1 ? dict[currentLang].gridTitleAll : dict[currentLang].gridTitleReg(getRegName(japanData[idx]), japanData[idx].prefectures.length);
-        document.getElementById('grid-title').innerText = titleText;
+        
+        let titleText = idx === -1 ? dict[currentLang].gridTitleAll : dict[currentLang].gridTitleReg(japanData[idx].kanji || japanData[idx].region.split(' ')[0], getRegPronunciation(japanData[idx]), japanData[idx].prefectures.length);
+        document.getElementById('grid-title').innerHTML = titleText;
     }
 
     let mapIndexLookup = [];
     function drawMainMap(hlIdx = -1) {
         if (!google.visualization) return;
         let mapData = new google.visualization.DataTable();
-        mapData.addColumn('string', 'Prefecture'); mapData.addColumn('number', 'Color'); mapData.addColumn({type: 'string', role: 'tooltip', p: {html: true}});
+        mapData.addColumn('string', 'Prefecture'); mapData.addColumn('number', 'Color'); mapData.addColumn({type: 'string', role: 'tooltip'});
         mapIndexLookup = [];
         
         japanData.forEach((reg, rIdx) => {
             reg.prefectures.forEach(pref => {
                 let val = (hlIdx === -1 || hlIdx === rIdx) ? (rIdx + 1) : 0;
-                
-                // HTML Tooltip อัปเกรดให้หรูหราขึ้น
-                let tHtml = `
-                    <div style="padding: 12px 18px; background: var(--bg-card); border-radius: 14px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 25px rgba(0,0,0,0.15);">
-                        <div class="jp-text" style="font-size: 22px; font-weight: 700; color: var(--primary); margin-bottom: 2px;">${pref.kanji}</div>
-                        <div style="font-size: 13px; color: var(--text-muted); font-family: Kanit;">${getPrefName(pref)}</div>
-                    </div>
-                `;
-                mapData.addRow(['JP-' + String(pref.id).padStart(2, '0'), val, tHtml]);
+                mapData.addRow(['JP-' + String(pref.id).padStart(2, '0'), val, pref.kanji]);
                 mapIndexLookup.push({ pref: pref, reg: reg });
             });
         });
@@ -640,9 +618,8 @@
         const emptyColor = isDark ? '#2d3238' : '#e8ecf1';
         const colors = ['#ff7675', '#f3a683', '#55efc4', '#74b9ff', '#a29bfe', '#e17055', '#fd79a8', '#b2bec3'];
 
-        let options = { region: 'JP', resolution: 'provinces', colorAxis: { values: [0, 1, 2, 3, 4, 5, 6, 7, 8], colors: [emptyColor, ...colors] }, backgroundColor: 'transparent', datalessRegionColor: emptyColor, legend: 'none', tooltip: { isHtml: true } };
+        let options = { region: 'JP', resolution: 'provinces', colorAxis: { values: [0, 1, 2, 3, 4, 5, 6, 7, 8], colors: [emptyColor, ...colors] }, backgroundColor: 'transparent', datalessRegionColor: emptyColor, legend: 'none', tooltip: { textStyle: { fontName: 'Kanit', fontSize: 14 } } };
         let chart = new google.visualization.GeoChart(document.getElementById('japan-map-div'));
-        
         google.visualization.events.addListener(chart, 'select', () => {
             let sel = chart.getSelection();
             if (sel.length > 0) {
@@ -652,19 +629,6 @@
                 if(foundIndex !== -1) openModal(foundIndex);
             }
         });
-
-        // ดักจับ Hover สร้างป้ายด้านล่าง (Mobile Friendly)
-        google.visualization.events.addListener(chart, 'onmouseover', (e) => {
-            if(mapStates['japan-map-div'].panning) return; 
-            let item = mapIndexLookup[e.row];
-            let badge = document.getElementById('hover-badge-study');
-            badge.innerHTML = `<span class="jp-text" style="font-size:20px; font-weight:700; color:var(--primary);">${item.pref.kanji}</span> <span style="color:var(--border);">|</span> <span style="color:var(--text-muted);">${getPrefName(item.pref)}</span>`;
-            badge.classList.add('show');
-        });
-        google.visualization.events.addListener(chart, 'onmouseout', () => {
-            document.getElementById('hover-badge-study').classList.remove('show');
-        });
-
         chart.draw(mapData, options);
     }
 
@@ -695,7 +659,10 @@
         document.getElementById('modal-kanji').innerText = pref.kanji;
         document.getElementById('modal-romaji').innerText = pref.romaji;
         document.getElementById('modal-lang-name').innerText = currentLang === 'th' && pref.thai ? `(${pref.thai})` : '';
-        document.getElementById('modal-region').innerText = `${reg.region.split(' ')[0]} (${getRegPronunciation(reg)})`;
+        
+        // เซ็ตป้ายภูมิภาค
+        document.getElementById('modal-reg-kanji').innerText = reg.kanji || reg.region.split(' ')[0];
+        document.getElementById('modal-reg-read').innerText = getRegPronunciation(reg);
         document.getElementById('jisho-link').href = `https://jisho.org/search/${pref.kanji}%20%23kanji`;
 
         const strokeBox = document.getElementById('modal-stroke');
@@ -740,7 +707,7 @@
         let chart = new google.visualization.GeoChart(document.getElementById(containerId));
         
         google.visualization.events.addListener(chart, 'ready', function () {
-             if (rIdx !== -1) setTimeout(() => autoZoomMiniMap(containerId, rIdx), 200);
+             if (rIdx !== -1 && wrapperId) setTimeout(() => autoZoomMap(wrapperId, containerId, rIdx), 200);
         });
         chart.draw(data, options);
     }
@@ -754,7 +721,7 @@
         if(!select) return;
         select.innerHTML = `<option value="-1">${dict[currentLang].filterAll}</option>`;
         japanData.forEach((reg, idx) => {
-            select.innerHTML += `<option value="${idx}">${getRegName(reg)}</option>`;
+            select.innerHTML += `<option value="${idx}">${reg.kanji || reg.region.split(' ')[0]} (${getRegPronunciation(reg)})</option>`;
         });
     }
 
@@ -846,15 +813,18 @@
             document.getElementById('fc-front-sub').innerText = currentLang === 'th' ? c.pref.romaji : "";
             document.getElementById('fc-back-main').innerText = c.pref.kanji;
             document.getElementById('fc-back-main').style.fontSize = "40px";
+            document.getElementById('fc-lang-name').innerText = ""; // ซ่อนด้านหลังเพราะโชว์ด้านหน้าแล้ว
         } else {
             document.getElementById('fc-front-main').innerText = c.pref.kanji;
             document.getElementById('fc-front-main').style.fontSize = "65px";
             document.getElementById('fc-front-sub').innerText = c.pref.romaji;
-            document.getElementById('fc-back-main').innerText = getPrefName(c.pref);
-            document.getElementById('fc-back-main').style.fontSize = "26px";
+            document.getElementById('fc-back-main').innerText = c.pref.kanji; // ให้โชว์คันจิด้วยเพื่อความชัวร์
+            document.getElementById('fc-back-main').style.fontSize = "30px";
+            document.getElementById('fc-lang-name').innerText = getPrefName(c.pref);
         }
 
-        document.getElementById('fc-region').innerText = `${c.reg.region.split(' ')[0]} (${getRegPronunciation(c.reg)})`;
+        document.getElementById('fc-reg-kanji').innerText = c.reg.kanji || c.reg.region.split(' ')[0];
+        document.getElementById('fc-reg-read').innerText = getRegPronunciation(c.reg);
         document.getElementById('fc-progress').innerText = dict[currentLang].fcProgress(deck.length);
 
         isFlipped = false;
@@ -862,7 +832,7 @@
         document.getElementById('fc-actions').classList.remove('show');
         
         btnResetZoom('fc-map-div');
-        drawMiniMap('fc-map-div', c.pref.id, c.reg.color || '#54a0ff', c.rIdx);
+        drawMiniMap('fc-map-div', c.pref.id, c.reg.color || '#54a0ff', c.rIdx, 'fc-map-wrapper');
     }
 
     function toggleFlip() {
@@ -907,7 +877,7 @@
         if (regionIdx === -1) { japanData.forEach(r => r.prefectures.forEach(p => gameQueue.push(p))); } 
         else { japanData[regionIdx].prefectures.forEach(p => gameQueue.push(p)); }
         gameQueue.sort(() => Math.random() - 0.5);
-        autoZoomRegion('game-map-div', regionIdx);
+        autoZoomMap('game-map-wrapper', 'game-map-div', regionIdx);
         nextGameQuestion();
     }
     function nextGameQuestion() {
@@ -928,22 +898,15 @@
     function redrawGameMap() {
         if (!google.visualization || !isGameRunning) return;
         let mapData = new google.visualization.DataTable();
-        mapData.addColumn('string', 'Prefecture'); mapData.addColumn('number', 'Color'); mapData.addColumn({type: 'string', role: 'tooltip', p: {html: true}});
+        mapData.addColumn('string', 'Prefecture'); mapData.addColumn('number', 'Color'); mapData.addColumn({type: 'string', role: 'tooltip'});
         let mapLookup = [];
         japanData.forEach((reg, rIdx) => {
             reg.prefectures.forEach(pref => {
                 let colorVal = 0;
                 if (gameCorrectIds.includes(pref.id)) colorVal = 2;
                 else if (gameRegionIdx === -1 || gameRegionIdx === rIdx) colorVal = 1;
-                
-                let htmlTooltip;
-                if (colorVal === 2) {
-                    htmlTooltip = `<div style="padding: 12px 18px; background: var(--bg-card); border-radius: 14px; text-align: center; border: 2px solid var(--success); box-shadow: 0 8px 25px rgba(0,0,0,0.15);"><div class="jp-text" style="font-size: 22px; font-weight: 700; color: var(--success);">${pref.kanji}</div></div>`;
-                } else {
-                    htmlTooltip = `<div style="padding: 12px 18px; background: var(--bg-card); border-radius: 14px; text-align: center; border: 1px solid var(--border); box-shadow: 0 8px 25px rgba(0,0,0,0.15);"><div style="font-size: 22px; font-weight: 700; color: var(--text-muted);">???</div></div>`;
-                }
-                
-                mapData.addRow(['JP-' + String(pref.id).padStart(2, '0'), colorVal, htmlTooltip]);
+                let tooltip = colorVal === 2 ? pref.kanji : "???";
+                mapData.addRow(['JP-' + String(pref.id).padStart(2, '0'), colorVal, tooltip]);
                 mapLookup.push(pref);
             });
         });
@@ -951,9 +914,8 @@
         const hiddenColor = isDark ? '#1a1d21' : '#f1f2f6';
         const activeColor = isDark ? '#3d454d' : '#dcdde1';
         const correctColor = '#1dd1a1';
-        let options = { region: 'JP', resolution: 'provinces', colorAxis: { values: [0, 1, 2], colors: [hiddenColor, activeColor, correctColor] }, backgroundColor: 'transparent', datalessRegionColor: hiddenColor, legend: 'none', tooltip: { isHtml: true } };
+        let options = { region: 'JP', resolution: 'provinces', colorAxis: { values: [0, 1, 2], colors: [hiddenColor, activeColor, correctColor] }, backgroundColor: 'transparent', datalessRegionColor: hiddenColor, legend: 'none', tooltip: { textStyle: { fontName: 'Kanit', fontSize: 16 } } };
         gameChart = new google.visualization.GeoChart(document.getElementById('game-map-div'));
-        
         google.visualization.events.addListener(gameChart, 'select', () => {
             if (!isGameRunning || mapStates['game-map-div'].panning) return; 
             let sel = gameChart.getSelection();
@@ -970,23 +932,6 @@
                 }
             }
         });
-
-        // ดักจับ Hover สร้างป้ายด้านล่างในโหมดเกม
-        google.visualization.events.addListener(gameChart, 'onmouseover', (e) => {
-            if (!isGameRunning || mapStates['game-map-div'].panning) return; 
-            let item = mapLookup[e.row];
-            let badge = document.getElementById('hover-badge-game');
-            if (gameCorrectIds.includes(item.id)) {
-                badge.innerHTML = `<span class="jp-text" style="font-size:20px; font-weight:700; color:var(--success);">${item.kanji}</span>`;
-            } else {
-                badge.innerHTML = `<span style="font-size:20px; font-weight:700; color:var(--text-muted);">???</span>`;
-            }
-            badge.classList.add('show');
-        });
-        google.visualization.events.addListener(gameChart, 'onmouseout', () => {
-            document.getElementById('hover-badge-game').classList.remove('show');
-        });
-
         gameChart.draw(mapData, options);
     }
 </script>
