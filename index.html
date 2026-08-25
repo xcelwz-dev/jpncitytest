@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Japan Prefectures: Masterpiece</title>
+    <title>Japan Prefectures: Ultimate</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -64,7 +64,7 @@
         .filter-btn .kanji { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
         .filter-btn .romaji { font-size: 12px; opacity: 0.9; }
 
-        /* ================= ระบบแผนที่ ================= */
+        /* ================= ระบบแผนที่ & ซูม ================= */
         .map-wrapper { position: relative; width: 100%; height: 500px; border-radius: var(--radius); background: var(--bg-page); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; touch-action: none; }
         .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
         .zoom-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); width: 35px; height: 35px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -186,6 +186,12 @@
             <label id="ui-fc-lbl-deck">เลือกเด็ค (หมวดหมู่):</label>
             <select id="fc-deck-select"></select>
             
+            <label id="ui-fc-lbl-order">ลำดับการแสดงผล:</label>
+            <select id="fc-order-select">
+                <option value="random" id="ui-fc-opt-rand">สุ่ม (Random)</option>
+                <option value="ordered" id="ui-fc-opt-ord">เรียงตามลำดับ (Sequential)</option>
+            </select>
+            
             <label id="ui-fc-lbl-front">หน้าการ์ดแสดงผล:</label>
             <select id="fc-front-select">
                 <option value="kanji" id="ui-fc-opt-kanji">คันจิ (Kanji)</option>
@@ -272,12 +278,8 @@
         <div class="kanji-stroke-box" id="modal-stroke"></div>
         <a href="#" target="_blank" class="jisho-link" id="jisho-link">📖 ดูความหมายลึกซึ้งใน Jisho.org</a>
 
-        <!-- แผนที่ย่อยมีระบบ Pan/Zoom ในตัว -->
+        <!-- แผนที่ย่อย -->
         <div class="mini-map-wrap" id="modal-map-wrapper">
-            <div class="zoom-controls" style="top: 5px; right: 5px;">
-                <button class="zoom-btn" style="width: 25px; height: 25px; font-size: 14px;" onclick="btnZoom(0.3, 'modal-map-div')">+</button>
-                <button class="zoom-btn" style="width: 25px; height: 25px; font-size: 14px;" onclick="btnZoom(-0.3, 'modal-map-div')">-</button>
-            </div>
             <div class="map-box" id="modal-map-div"></div>
         </div>
 
@@ -290,7 +292,7 @@
 </div>
 
 <script>
-    // ================= ระบบภาษา (แก้บัคการเรียกใช้ตัวแปรให้ปลอดภัย 100%) =================
+    // ================= ระบบภาษา (i18n) =================
     const dict = {
         th: {
             title: "Japan Prefectures", subtitle: "เรียนรู้แผนที่และท่องจำจังหวัดญี่ปุ่น",
@@ -298,7 +300,9 @@
             filterAll: "ทั่วประเทศ", gridTitleAll: "ทุกจังหวัด (47)", gridTitleReg: (reg, num) => `ภูมิภาค ${reg} (${num} จังหวัด)`,
             modalStroke: "ลำดับเส้นคันจิ (KanjiVG)", modalJisho: "📖 ดูความหมายลึกซึ้งใน Jisho.org",
             btnPrev: "◀ ก่อนหน้า", btnNext: "ถัดไป ▶", btnUndo: "↩ ย้อนกลับ", btnBackSetup: "⚙️ กลับไปตั้งค่า",
-            fcSetupTitle: "ตั้งค่าแฟลชการ์ด", fcDeckLbl: "เลือกเด็ค (ภูมิภาค):", fcFrontLbl: "หน้าการ์ดแสดงผล:", fcFrontKanji: "คันจิ (Kanji)", fcFrontMean: "คำแปล / โรมาจิ (Meaning)", fcBtnStart: "เริ่มท่องจำ",
+            fcSetupTitle: "ตั้งค่าแฟลชการ์ด", fcDeckLbl: "เลือกเด็ค (ภูมิภาค):", 
+            fcOrderLbl: "ลำดับการแสดงผล:", fcOrderRand: "สุ่ม (Random)", fcOrderOrd: "เรียงตามลำดับ (Sequential)",
+            fcFrontLbl: "หน้าการ์ดแสดงผล:", fcFrontKanji: "คันจิ (Kanji)", fcFrontMean: "คำอ่าน / คำแปล (Romaji / Thai)", fcBtnStart: "เริ่มท่องจำ",
             fcProgress: (left) => `เหลืออีก ${left} ใบ`, fcEnd: "ท่องจำจบแล้ว!", btnRestart: "เริ่มใหม่",
             btnNo: "จำไม่ได้ ❌", btnYes: "จำได้แล้ว ✅",
             gamePrompt: "เลือกระดับความยากด้านบน", gamePromptTarget: (k, r) => `📍 จงหา: <span class="jp-text">${k}</span> (${r})`, gameEnd: "🎉 สุดยอด! เติมแผนที่ครบแล้ว",
@@ -310,7 +314,9 @@
             filterAll: "All Regions", gridTitleAll: "All Prefectures (47)", gridTitleReg: (reg, num) => `${reg} Region (${num} Prefectures)`,
             modalStroke: "Kanji Stroke Order (KanjiVG)", modalJisho: "📖 View details on Jisho.org",
             btnPrev: "◀ Prev", btnNext: "Next ▶", btnUndo: "↩ Undo", btnBackSetup: "⚙️ Back to Settings",
-            fcSetupTitle: "Flashcard Settings", fcDeckLbl: "Select Deck (Region):", fcFrontLbl: "Card Front Display:", fcFrontKanji: "Kanji", fcFrontMean: "Meaning / Romaji", fcBtnStart: "Start Memorizing",
+            fcSetupTitle: "Flashcard Settings", fcDeckLbl: "Select Deck (Region):", 
+            fcOrderLbl: "Display Order:", fcOrderRand: "Random", fcOrderOrd: "Sequential",
+            fcFrontLbl: "Card Front Display:", fcFrontKanji: "Kanji", fcFrontMean: "Meaning / Romaji", fcBtnStart: "Start Memorizing",
             fcProgress: (left) => `${left} cards remaining`, fcEnd: "All Memorized!", btnRestart: "Restart",
             btnNo: "Don't Know ❌", btnYes: "Got it ✅",
             gamePrompt: "Select a region above to start", gamePromptTarget: (k, r) => `📍 Find: <span class="jp-text">${k}</span> (${r})`, gameEnd: "🎉 Awesome! Map completed",
@@ -326,7 +332,6 @@
         applyLanguage();
     }
 
-    // ฟังก์ชันดึงชื่อที่ปลอดภัยที่สุด
     function getPrefName(pref) { return currentLang === 'th' && pref.thai ? pref.thai : pref.romaji; }
     function getRegPronunciation(reg) { return currentLang === 'th' && reg.thai ? reg.thai : (reg.romaji ? reg.romaji.split(' ')[0] : reg.region); }
     function getRegName(reg) { return currentLang === 'th' && reg.thai ? reg.thai : (reg.romaji ? reg.romaji.split(' ')[0] : reg.region); }
@@ -342,6 +347,9 @@
         document.getElementById('nav-game').innerText = d.tabGame;
         document.getElementById('ui-fc-setup-title').innerText = d.fcSetupTitle;
         document.getElementById('ui-fc-lbl-deck').innerText = d.fcDeckLbl;
+        document.getElementById('ui-fc-lbl-order').innerText = d.fcOrderLbl;
+        document.getElementById('ui-fc-opt-rand').innerText = d.fcOrderRand;
+        document.getElementById('ui-fc-opt-ord').innerText = d.fcOrderOrd;
         document.getElementById('ui-fc-lbl-front').innerText = d.fcFrontLbl;
         document.getElementById('ui-fc-opt-kanji').innerText = d.fcFrontKanji;
         document.getElementById('ui-fc-opt-mean').innerText = d.fcFrontMean;
@@ -361,7 +369,7 @@
         
         renderFilters('region-filters', selectStudyFilter);
         renderFilters('game-filters', startGame);
-        populateFcDeckSelect(); // เรียกใช้คำสั่งดึงชื่อเด็ค (ผ่าน getRegName แล้ว ปลอดภัย 100%)
+        populateFcDeckSelect(); 
         selectStudyFilter(currentFilterIdx);
         if(document.getElementById('flashcard-area').style.display !== 'none' && deck.length > 0) showCard();
     }
@@ -384,11 +392,10 @@
         if(document.getElementById('game-area').style.display !== 'none' && isGameRunning) redrawGameMap();
     }
 
-    // ================= ระบบซูม & ลากเลื่อน (Pinch Zoom) =================
+    // ================= ระบบซูม & ลากเลื่อน =================
     const mapStates = {
         'japan-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 },
-        'game-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 },
-        'modal-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 }
+        'game-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 }
     };
 
     function enablePanZoom(wrapperId, mapId) {
@@ -469,41 +476,41 @@
         document.getElementById(mapId).style.transform = `translate(0px, 0px) scale(1)`;
     }
 
-    // ================= Auto-Zoom Helper =================
-    const regionZoomParams = {
-        0: { scale: 1.8, x: -100, y: 150 }, 1: { scale: 2.2, x: -60, y: 60 }, 2: { scale: 3.5, x: -80, y: -60 }, 3: { scale: 2.5, x: 0, y: -20 },
-        4: { scale: 3.0, x: 80, y: -50 }, 5: { scale: 2.5, x: 150, y: -100 }, 6: { scale: 3.0, x: 100, y: -150 }, 7: { scale: 2.5, x: 220, y: -200 }
+    // ================= Auto-Zoom Helper (ใช้ Transform Origin เพื่อป้องกันบัคตกขอบ) =================
+    const regionOrigins = {
+        0: "75% 20%", // Hokkaido
+        1: "70% 40%", // Tohoku
+        2: "70% 55%", // Kanto
+        3: "55% 55%", // Chubu
+        4: "45% 65%", // Kansai
+        5: "25% 65%", // Chugoku
+        6: "30% 75%", // Shikoku
+        7: "15% 80%"  // Kyushu
     };
 
     function autoZoomRegion(mapId, rIdx) {
-        if(rIdx === -1) { btnResetZoom(mapId); return; }
-        let params = regionZoomParams[rIdx];
-        if(params) {
-            let s = mapStates[mapId];
-            let isMobile = window.innerWidth <= 768;
-            s.scale = params.scale;
-            s.x = params.x * (isMobile ? 0.6 : 1);
-            s.y = params.y * (isMobile ? 0.6 : 1);
-            document.getElementById(mapId).style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
-            document.getElementById(mapId).style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
+        let mapEl = document.getElementById(mapId);
+        if(rIdx === -1) { 
+            mapEl.style.transition = "transform 0.4s ease";
+            mapEl.style.transform = `scale(1)`;
+            mapEl.style.transformOrigin = "center center";
+            return; 
         }
+        mapEl.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
+        mapEl.style.transformOrigin = regionOrigins[rIdx];
+        mapEl.style.transform = `scale(2.5)`; 
     }
 
     function autoZoomMiniMap(mapId, rIdx) {
-        const miniMapZoomParams = {
-            0: { scale: 2.0, x: -50, y: 60 }, 1: { scale: 2.5, x: -30, y: 40 }, 2: { scale: 4.5, x: -50, y: -30 }, 3: { scale: 3.5, x: -10, y: -20 },
-            4: { scale: 4.0, x: 40, y: -25 }, 5: { scale: 3.5, x: 70, y: -45 }, 6: { scale: 4.0, x: 60, y: -65 }, 7: { scale: 3.5, x: 90, y: -80 }
-        };
-        let params = miniMapZoomParams[rIdx];
-        if(params) {
-            let s = mapStates[mapId];
-            let isMobile = window.innerWidth <= 768;
-            s.scale = params.scale;
-            s.x = params.x * (isMobile ? 0.7 : 1);
-            s.y = params.y * (isMobile ? 0.7 : 1);
-            document.getElementById(mapId).style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
-            document.getElementById(mapId).style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
+        let mapEl = document.getElementById(mapId);
+        if(rIdx === -1) { 
+            mapEl.style.transform = `scale(1)`;
+            mapEl.style.transformOrigin = "center center";
+            return; 
         }
+        mapEl.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
+        mapEl.style.transformOrigin = regionOrigins[rIdx];
+        mapEl.style.transform = `scale(3.5)`; // Mini map เล็กกว่าหลัก เลยต้องซูมมากกว่า
     }
 
     // ================= เริ่มต้นระบบ =================
@@ -514,7 +521,6 @@
         applyLanguage(); 
         enablePanZoom('study-map-wrapper', 'japan-map-div');
         enablePanZoom('game-map-wrapper', 'game-map-div');
-        enablePanZoom('modal-map-wrapper', 'modal-map-div');
     });
 
     function switchTab(tab) {
@@ -543,7 +549,7 @@
         container.innerHTML = '';
         let btnAll = document.createElement('div');
         btnAll.className = 'filter-btn active';
-        btnAll.innerHTML = `<div class="kanji">${dict[currentLang].filterAll}</div><div class="romaji">All Japan</div>`;
+        btnAll.innerHTML = `<div class="kanji">全国</div><div class="romaji">${dict[currentLang].filterAll}</div>`;
         btnAll.onclick = () => { setActiveFilter(container, btnAll); callback(-1); autoZoomRegion(containerId.includes('game') ? 'game-map-div' : 'japan-map-div', -1); };
         container.appendChild(btnAll);
 
@@ -570,7 +576,6 @@
         });
         drawMainMap(idx);
         renderPrefectureList();
-        
         let titleText = idx === -1 ? dict[currentLang].gridTitleAll : dict[currentLang].gridTitleReg(getRegName(japanData[idx]), japanData[idx].prefectures.length);
         document.getElementById('grid-title').innerText = titleText;
     }
@@ -657,8 +662,8 @@
         document.getElementById('btn-next-modal').disabled = (currentModalIndex === currentDisplayList.length - 1);
         document.getElementById('pref-modal').style.display = 'flex';
         
-        btnResetZoom('modal-map-div');
-        drawMiniMap('modal-map-div', pref.id, reg.color || '#54a0ff', data.rIdx);
+        document.getElementById('modal-map-div').style.transform = "scale(1)"; 
+        setTimeout(() => drawMiniMap('modal-map-div', pref.id, reg.color || '#54a0ff', data.rIdx), 50);
     }
 
     function navigateModal(step) {
@@ -680,14 +685,14 @@
         let chart = new google.visualization.GeoChart(document.getElementById(containerId));
         
         google.visualization.events.addListener(chart, 'ready', function () {
-             if (rIdx !== -1) setTimeout(() => autoZoomMiniMap(containerId, rIdx), 300);
+             if (rIdx !== -1) setTimeout(() => autoZoomMiniMap(containerId, rIdx), 200);
         });
         chart.draw(data, options);
     }
 
     // ================= โหมดท่องจำ (พร้อมระบบตั้งค่า) =================
     let deck = [], historyDeck = [], isFlipped = false, currentWord = "";
-    let fcSettings = { deck: -1, frontMode: 'kanji' };
+    let fcSettings = { deck: -1, orderMode: 'random', frontMode: 'kanji' };
 
     function populateFcDeckSelect() {
         const select = document.getElementById('fc-deck-select');
@@ -717,6 +722,7 @@
 
     function startFlashcards() {
         fcSettings.deck = parseInt(document.getElementById('fc-deck-select').value);
+        fcSettings.orderMode = document.getElementById('fc-order-select').value;
         fcSettings.frontMode = document.getElementById('fc-front-select').value;
         localStorage.setItem('jpMasterFcSettings', JSON.stringify(fcSettings));
         initFlashcards(true);
@@ -729,7 +735,14 @@
                 reg.prefectures.forEach(pref => deck.push({ pref, reg, rIdx }));
             }
         });
-        deck.sort(() => Math.random() - 0.5);
+        
+        // จัดลำดับไพ่ (สุ่ม หรือ เรียง)
+        if(fcSettings.orderMode === 'random') {
+            deck.sort(() => Math.random() - 0.5);
+        } else {
+            deck.sort((a, b) => a.pref.id - b.pref.id);
+        }
+        
         localStorage.setItem('jpMasterCards2', JSON.stringify(deck));
         localStorage.setItem('jpMasterHistory2', JSON.stringify(historyDeck));
         
@@ -794,8 +807,8 @@
         document.getElementById('fc-card').classList.remove('flipped');
         document.getElementById('fc-actions').classList.remove('show');
         
-        btnResetZoom('fc-map');
-        drawMiniMap('fc-map', c.pref.id, c.reg.color || '#54a0ff', c.rIdx);
+        document.getElementById('fc-map').style.transform = "scale(1)"; 
+        setTimeout(() => drawMiniMap('fc-map', c.pref.id, c.reg.color || '#54a0ff', c.rIdx), 50);
     }
 
     function toggleFlip() {
@@ -840,6 +853,8 @@
         if (regionIdx === -1) { japanData.forEach(r => r.prefectures.forEach(p => gameQueue.push(p))); } 
         else { japanData[regionIdx].prefectures.forEach(p => gameQueue.push(p)); }
         gameQueue.sort(() => Math.random() - 0.5);
+        
+        autoZoomRegion('game-map-div', regionIdx); 
         nextGameQuestion();
     }
     function nextGameQuestion() {
