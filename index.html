@@ -64,7 +64,7 @@
         .filter-btn .kanji { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
         .filter-btn .romaji { font-size: 12px; opacity: 0.9; }
 
-        /* ================= ระบบแผนที่ & ซูม ================= */
+        /* ================= ระบบแผนที่ ================= */
         .map-wrapper { position: relative; width: 100%; height: 500px; border-radius: var(--radius); background: var(--bg-page); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; touch-action: none; }
         .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
         .zoom-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); width: 35px; height: 35px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -82,7 +82,6 @@
         /* ================= โหมดท่องจำ ================= */
         #flashcard-area { display: none; text-align: center; padding: 10px 0; }
         
-        /* เมนูตั้งค่า Flashcard */
         .fc-setup-box { background: var(--bg-page); border: 1px solid var(--border); border-radius: var(--radius); padding: 30px; text-align: left; max-width: 450px; margin: 0 auto 20px; }
         .fc-setup-box label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--text-muted); font-weight: 500;}
         .fc-setup-box select { width: 100%; padding: 12px 15px; border-radius: 12px; border: 1px solid var(--border); background: var(--bg-card); color: var(--text-main); margin-bottom: 20px; font-family: inherit; font-size: 15px; outline: none; cursor: pointer;}
@@ -121,7 +120,6 @@
         
         .mini-map-wrap { position: relative; width: 100%; height: 160px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; background: var(--bg-page); }
 
-        /* ================= Footer ================= */
         .footer-credit { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 14px; }
 
         /* ================= Responsive ================= */
@@ -183,13 +181,12 @@
     <!-- ================= โหมดท่องจำ ================= -->
     <div id="flashcard-area">
         
-        <!-- เมนูตั้งค่าก่อนเริ่มเล่น -->
         <div class="fc-setup-box" id="fc-setup-area">
             <h3 style="margin-top:0; text-align:center;" id="ui-fc-setup-title">ตั้งค่าแฟลชการ์ด</h3>
             <label id="ui-fc-lbl-deck">เลือกเด็ค (หมวดหมู่):</label>
             <select id="fc-deck-select"></select>
             
-            <label id="ui-fc-lbl-front">ด้านหน้าการ์ด:</label>
+            <label id="ui-fc-lbl-front">หน้าการ์ดแสดงผล:</label>
             <select id="fc-front-select">
                 <option value="kanji" id="ui-fc-opt-kanji">คันจิ (Kanji)</option>
                 <option value="meaning" id="ui-fc-opt-mean">คำอ่าน / คำแปล (Romaji / Thai)</option>
@@ -198,7 +195,6 @@
             <button class="btn-start-fc" id="ui-btn-fc-start" onclick="startFlashcards()">เริ่มท่องจำ</button>
         </div>
 
-        <!-- พื้นที่เล่นการ์ด -->
         <div id="fc-play-area" style="display:none;">
             <div class="fc-header">
                 <div id="fc-progress" style="color: var(--text-muted); font-size: 14px;"></div>
@@ -255,7 +251,6 @@
         </div>
     </div>
 
-    <!-- เครดิตผู้พัฒนา -->
     <div class="footer-credit">
         Developed by <strong>Chanin (KKU)</strong>
     </div>
@@ -295,7 +290,7 @@
 </div>
 
 <script>
-    // ================= ระบบภาษา (i18n) =================
+    // ================= ระบบภาษา (แก้บัคการเรียกใช้ตัวแปรให้ปลอดภัย 100%) =================
     const dict = {
         th: {
             title: "Japan Prefectures", subtitle: "เรียนรู้แผนที่และท่องจำจังหวัดญี่ปุ่น",
@@ -331,6 +326,11 @@
         applyLanguage();
     }
 
+    // ฟังก์ชันดึงชื่อที่ปลอดภัยที่สุด
+    function getPrefName(pref) { return currentLang === 'th' && pref.thai ? pref.thai : pref.romaji; }
+    function getRegPronunciation(reg) { return currentLang === 'th' && reg.thai ? reg.thai : (reg.romaji ? reg.romaji.split(' ')[0] : reg.region); }
+    function getRegName(reg) { return currentLang === 'th' && reg.thai ? reg.thai : (reg.romaji ? reg.romaji.split(' ')[0] : reg.region); }
+
     function applyLanguage() {
         document.getElementById('lang-btn').innerText = currentLang === 'th' ? '🇬🇧 EN' : '🇹🇭 TH';
         const d = dict[currentLang];
@@ -361,13 +361,10 @@
         
         renderFilters('region-filters', selectStudyFilter);
         renderFilters('game-filters', startGame);
-        populateFcDeckSelect();
+        populateFcDeckSelect(); // เรียกใช้คำสั่งดึงชื่อเด็ค (ผ่าน getRegName แล้ว ปลอดภัย 100%)
         selectStudyFilter(currentFilterIdx);
         if(document.getElementById('flashcard-area').style.display !== 'none' && deck.length > 0) showCard();
     }
-
-    function getPrefName(pref) { return currentLang === 'th' && pref.thai ? pref.thai : pref.romaji; }
-    function getRegPronunciation(reg) { return currentLang === 'th' && reg.thai ? reg.thai : reg.romaji.split(' ')[0]; }
 
     // ================= ระบบธีม =================
     const savedTheme = localStorage.getItem('jpMasterTheme');
@@ -546,7 +543,7 @@
         container.innerHTML = '';
         let btnAll = document.createElement('div');
         btnAll.className = 'filter-btn active';
-        btnAll.innerHTML = `<div class="kanji">全国</div><div class="romaji">${dict[currentLang].filterAll}</div>`;
+        btnAll.innerHTML = `<div class="kanji">${dict[currentLang].filterAll}</div><div class="romaji">All Japan</div>`;
         btnAll.onclick = () => { setActiveFilter(container, btnAll); callback(-1); autoZoomRegion(containerId.includes('game') ? 'game-map-div' : 'japan-map-div', -1); };
         container.appendChild(btnAll);
 
@@ -573,6 +570,7 @@
         });
         drawMainMap(idx);
         renderPrefectureList();
+        
         let titleText = idx === -1 ? dict[currentLang].gridTitleAll : dict[currentLang].gridTitleReg(getRegName(japanData[idx]), japanData[idx].prefectures.length);
         document.getElementById('grid-title').innerText = titleText;
     }
@@ -660,8 +658,7 @@
         document.getElementById('pref-modal').style.display = 'flex';
         
         btnResetZoom('modal-map-div');
-        drawMiniMap('modal-map-div', pref.id, reg.color || '#54a0ff');
-        setTimeout(() => autoZoomMiniMap('modal-map-div', data.rIdx), 300); // Auto Zoom in Modal
+        drawMiniMap('modal-map-div', pref.id, reg.color || '#54a0ff', data.rIdx);
     }
 
     function navigateModal(step) {
@@ -673,22 +670,28 @@
         if(e.target.id === 'pref-modal' || e.target.classList.contains('close-btn')) document.getElementById('pref-modal').style.display = 'none';
     }
 
-    function drawMiniMap(containerId, targetId, color) {
+    function drawMiniMap(containerId, targetId, color, rIdx = -1) {
         if (!google.visualization) return;
         let data = new google.visualization.DataTable();
         data.addColumn('string', 'Prefecture'); data.addColumn('number', 'Color');
         japanData.forEach(reg => reg.prefectures.forEach(p => { data.addRow(['JP-' + String(p.id).padStart(2, '0'), p.id === targetId ? 1 : 0]); }));
         const empty = document.body.getAttribute('data-theme') === 'dark' ? '#2d3238' : '#e8ecf1';
         let options = { region: 'JP', resolution: 'provinces', colorAxis: { values: [0,1], colors: [empty, color] }, backgroundColor: 'transparent', datalessRegionColor: empty, legend: 'none', enableRegionInteractivity: false, tooltip: { trigger: 'none' } };
-        new google.visualization.GeoChart(document.getElementById(containerId)).draw(data, options);
+        let chart = new google.visualization.GeoChart(document.getElementById(containerId));
+        
+        google.visualization.events.addListener(chart, 'ready', function () {
+             if (rIdx !== -1) setTimeout(() => autoZoomMiniMap(containerId, rIdx), 300);
+        });
+        chart.draw(data, options);
     }
 
     // ================= โหมดท่องจำ (พร้อมระบบตั้งค่า) =================
     let deck = [], historyDeck = [], isFlipped = false, currentWord = "";
-    let fcSettings = { deck: -1, frontMode: 'kanji' }; // ค่า default
+    let fcSettings = { deck: -1, frontMode: 'kanji' };
 
     function populateFcDeckSelect() {
         const select = document.getElementById('fc-deck-select');
+        if(!select) return;
         select.innerHTML = `<option value="-1">${dict[currentLang].filterAll}</option>`;
         japanData.forEach((reg, idx) => {
             select.innerHTML += `<option value="${idx}">${getRegName(reg)}</option>`;
@@ -708,7 +711,6 @@
                 return;
             }
         }
-        // ถ้าไม่มีประวัติ ให้โชว์หน้าตั้งค่า
         document.getElementById('fc-setup-area').style.display = 'block';
         document.getElementById('fc-play-area').style.display = 'none';
     }
@@ -771,7 +773,6 @@
         
         document.getElementById('fc-num').innerText = String(c.pref.id).padStart(2, '0');
         
-        // สลับข้อมูลหน้า/หลัง ตามการตั้งค่า
         if (fcSettings.frontMode === 'meaning') {
             document.getElementById('fc-front-main').innerText = getPrefName(c.pref);
             document.getElementById('fc-front-main').style.fontSize = "36px";
@@ -793,10 +794,8 @@
         document.getElementById('fc-card').classList.remove('flipped');
         document.getElementById('fc-actions').classList.remove('show');
         
-        // วาดภาพ Mini Map
-        drawMiniMap('fc-map', c.pref.id, c.reg.color || '#54a0ff');
-        document.getElementById('fc-map').style.transform = "scale(1)"; 
-        setTimeout(() => autoZoomMiniMap('fc-map', c.rIdx), 300); // Auto Zoom in Flashcard
+        btnResetZoom('fc-map');
+        drawMiniMap('fc-map', c.pref.id, c.reg.color || '#54a0ff', c.rIdx);
     }
 
     function toggleFlip() {
