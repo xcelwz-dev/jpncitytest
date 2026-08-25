@@ -40,6 +40,7 @@
 
         .container { width: 100%; max-width: 900px; background: var(--bg-card); padding: 40px; border-radius: var(--radius); box-shadow: var(--shadow); position: relative; }
 
+        /* ส่วนหัวและปุ่มตั้งค่า */
         .header-box { text-align: center; margin-bottom: 30px; }
         h1 { margin: 0 0 5px 0; font-weight: 600; font-size: 28px; }
         
@@ -64,14 +65,15 @@
         .filter-btn .kanji { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
         .filter-btn .romaji { font-size: 12px; opacity: 0.9; }
 
-        /* ================= ระบบแผนที่ & ซูม ================= */
+        /* ================= ระบบแผนที่ & ซูม (แก้ภาพเบลอ) ================= */
         .map-wrapper { position: relative; width: 100%; height: 500px; border-radius: var(--radius); background: var(--bg-page); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; touch-action: none; }
         .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
         .zoom-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); width: 35px; height: 35px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .zoom-btn:hover { background: var(--border); color: var(--primary); }
         .zoom-reset { font-size: 12px; width: auto; padding: 0 10px; font-family: inherit;}
         
-        .map-box { width: 100%; height: 100%; transform-origin: center center; }
+        /* ใส่ will-change ให้เบราว์เซอร์เตรียมหน่วยความจำสำหรับซูม ให้ภาพชัดไม่เบลอ */
+        .map-box { width: 100%; height: 100%; transform-origin: center center; will-change: transform; }
         .map-box path { vector-effect: non-scaling-stroke; }
 
         .pref-number { position: absolute; top: 12px; left: 12px; font-size: 11px; font-weight: 500; color: var(--text-muted); background: rgba(131, 149, 167, 0.15); padding: 3px 8px; border-radius: 8px; }
@@ -118,8 +120,9 @@
         .nav-modal-btn:hover { background: var(--border); }
         .nav-modal-btn:disabled { opacity: 0.3; cursor: not-allowed; }
         
-        .mini-map-wrap { position: relative; width: 100%; height: 160px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; background: var(--bg-page); }
+        .mini-map-wrap { position: relative; width: 100%; height: 160px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; background: var(--bg-page); touch-action: none; }
 
+        /* ================= Footer ================= */
         .footer-credit { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 14px; }
 
         /* ================= Responsive ================= */
@@ -167,9 +170,9 @@
         
         <div class="map-wrapper" id="study-map-wrapper">
             <div class="zoom-controls">
-                <button class="zoom-btn" onclick="btnZoom(0.3, 'japan-map-div')">+</button>
-                <button class="zoom-btn" onclick="btnZoom(-0.3, 'japan-map-div')">-</button>
-                <button class="zoom-btn zoom-reset" onclick="btnResetZoom('japan-map-div')">Reset</button>
+                <button class="zoom-btn" onclick="btnZoom(0.3, 'japan-map-div', event)">+</button>
+                <button class="zoom-btn" onclick="btnZoom(-0.3, 'japan-map-div', event)">-</button>
+                <button class="zoom-btn zoom-reset" onclick="btnResetZoom('japan-map-div', event)">Reset</button>
             </div>
             <div class="map-box" id="japan-map-div"></div>
         </div>
@@ -224,9 +227,16 @@
                     <div class="fc-face fc-back">
                         <div class="jp-text" style="font-size: 26px; font-weight: bold; color: var(--primary); margin-bottom: 5px;" id="fc-back-main"></div>
                         <div style="font-size: 16px; color: var(--text-main); margin-bottom: 10px;" id="fc-region"></div>
-                        <div class="mini-map-wrap">
-                            <div class="map-box" id="fc-map"></div>
+                        
+                        <!-- Mini map ใน Flashcard ที่มีระบบซูม -->
+                        <div class="mini-map-wrap" id="fc-map-wrapper" onclick="event.stopPropagation()">
+                            <div class="zoom-controls" style="top: 5px; right: 5px;">
+                                <button class="zoom-btn" style="width: 25px; height: 25px; font-size: 14px;" onclick="btnZoom(0.3, 'fc-map-div', event)">+</button>
+                                <button class="zoom-btn" style="width: 25px; height: 25px; font-size: 14px;" onclick="btnZoom(-0.3, 'fc-map-div', event)">-</button>
+                            </div>
+                            <div class="map-box" id="fc-map-div"></div>
                         </div>
+
                     </div>
                 </div>
             </div>
@@ -249,14 +259,15 @@
         
         <div class="map-wrapper" id="game-map-wrapper" style="height: 450px;">
             <div class="zoom-controls">
-                <button class="zoom-btn" onclick="btnZoom(0.3, 'game-map-div')">+</button>
-                <button class="zoom-btn" onclick="btnZoom(-0.3, 'game-map-div')">-</button>
-                <button class="zoom-btn zoom-reset" onclick="btnResetZoom('game-map-div')">Reset</button>
+                <button class="zoom-btn" onclick="btnZoom(0.3, 'game-map-div', event)">+</button>
+                <button class="zoom-btn" onclick="btnZoom(-0.3, 'game-map-div', event)">-</button>
+                <button class="zoom-btn zoom-reset" onclick="btnResetZoom('game-map-div', event)">Reset</button>
             </div>
             <div class="map-box" id="game-map-div"></div>
         </div>
     </div>
 
+    <!-- เครดิตผู้พัฒนา -->
     <div class="footer-credit">
         Developed by <strong>Chanin (KKU)</strong>
     </div>
@@ -278,8 +289,12 @@
         <div class="kanji-stroke-box" id="modal-stroke"></div>
         <a href="#" target="_blank" class="jisho-link" id="jisho-link">📖 ดูความหมายลึกซึ้งใน Jisho.org</a>
 
-        <!-- แผนที่ย่อย -->
+        <!-- แผนที่ย่อยมีระบบ Pan/Zoom ในตัว -->
         <div class="mini-map-wrap" id="modal-map-wrapper">
+            <div class="zoom-controls" style="top: 5px; right: 5px;">
+                <button class="zoom-btn" style="width: 25px; height: 25px; font-size: 14px;" onclick="btnZoom(0.3, 'modal-map-div', event)">+</button>
+                <button class="zoom-btn" style="width: 25px; height: 25px; font-size: 14px;" onclick="btnZoom(-0.3, 'modal-map-div', event)">-</button>
+            </div>
             <div class="map-box" id="modal-map-div"></div>
         </div>
 
@@ -392,10 +407,12 @@
         if(document.getElementById('game-area').style.display !== 'none' && isGameRunning) redrawGameMap();
     }
 
-    // ================= ระบบซูม & ลากเลื่อน =================
+    // ================= ระบบซูม & ลากเลื่อน (Pinch Zoom) =================
     const mapStates = {
         'japan-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 },
-        'game-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 }
+        'game-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 },
+        'modal-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 },
+        'fc-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 }
     };
 
     function enablePanZoom(wrapperId, mapId) {
@@ -461,7 +478,8 @@
         }, { passive: false });
     }
 
-    function btnZoom(step, mapId) {
+    function btnZoom(step, mapId, e) {
+        if(e) e.stopPropagation();
         let s = mapStates[mapId];
         s.scale += step; s.scale = Math.min(Math.max(1, s.scale), 4);
         if(s.scale === 1) { s.x = 0; s.y = 0; }
@@ -469,27 +487,23 @@
         document.getElementById(mapId).style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
     }
 
-    function btnResetZoom(mapId) {
+    function btnResetZoom(mapId, e) {
+        if(e) e.stopPropagation();
         let s = mapStates[mapId];
         s.scale = 1; s.x = 0; s.y = 0;
         document.getElementById(mapId).style.transition = "transform 0.3s ease-out";
         document.getElementById(mapId).style.transform = `translate(0px, 0px) scale(1)`;
     }
 
-    // ================= Auto-Zoom Helper (ใช้ Transform Origin เพื่อป้องกันบัคตกขอบ) =================
+    // ================= Auto-Zoom Helper =================
     const regionOrigins = {
-        0: "75% 20%", // Hokkaido
-        1: "70% 40%", // Tohoku
-        2: "70% 55%", // Kanto
-        3: "55% 55%", // Chubu
-        4: "45% 65%", // Kansai
-        5: "25% 65%", // Chugoku
-        6: "30% 75%", // Shikoku
-        7: "15% 80%"  // Kyushu
+        0: "75% 20%", 1: "70% 40%", 2: "70% 55%", 3: "55% 55%",
+        4: "45% 65%", 5: "25% 65%", 6: "30% 75%", 7: "15% 80%"
     };
 
     function autoZoomRegion(mapId, rIdx) {
         let mapEl = document.getElementById(mapId);
+        if(!mapEl) return;
         if(rIdx === -1) { 
             mapEl.style.transition = "transform 0.4s ease";
             mapEl.style.transform = `scale(1)`;
@@ -503,6 +517,7 @@
 
     function autoZoomMiniMap(mapId, rIdx) {
         let mapEl = document.getElementById(mapId);
+        if(!mapEl) return;
         if(rIdx === -1) { 
             mapEl.style.transform = `scale(1)`;
             mapEl.style.transformOrigin = "center center";
@@ -510,7 +525,7 @@
         }
         mapEl.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
         mapEl.style.transformOrigin = regionOrigins[rIdx];
-        mapEl.style.transform = `scale(3.5)`; // Mini map เล็กกว่าหลัก เลยต้องซูมมากกว่า
+        mapEl.style.transform = `scale(3.5)`;
     }
 
     // ================= เริ่มต้นระบบ =================
@@ -521,6 +536,8 @@
         applyLanguage(); 
         enablePanZoom('study-map-wrapper', 'japan-map-div');
         enablePanZoom('game-map-wrapper', 'game-map-div');
+        enablePanZoom('modal-map-wrapper', 'modal-map-div');
+        enablePanZoom('fc-map-wrapper', 'fc-map-div');
     });
 
     function switchTab(tab) {
@@ -549,7 +566,7 @@
         container.innerHTML = '';
         let btnAll = document.createElement('div');
         btnAll.className = 'filter-btn active';
-        btnAll.innerHTML = `<div class="kanji">全国</div><div class="romaji">${dict[currentLang].filterAll}</div>`;
+        btnAll.innerHTML = `<div class="kanji">${dict[currentLang].filterAll}</div><div class="romaji">All Japan</div>`;
         btnAll.onclick = () => { setActiveFilter(container, btnAll); callback(-1); autoZoomRegion(containerId.includes('game') ? 'game-map-div' : 'japan-map-div', -1); };
         container.appendChild(btnAll);
 
@@ -662,8 +679,8 @@
         document.getElementById('btn-next-modal').disabled = (currentModalIndex === currentDisplayList.length - 1);
         document.getElementById('pref-modal').style.display = 'flex';
         
-        document.getElementById('modal-map-div').style.transform = "scale(1)"; 
-        setTimeout(() => drawMiniMap('modal-map-div', pref.id, reg.color || '#54a0ff', data.rIdx), 50);
+        btnResetZoom('modal-map-div');
+        drawMiniMap('modal-map-div', pref.id, reg.color || '#54a0ff', data.rIdx);
     }
 
     function navigateModal(step) {
@@ -736,7 +753,6 @@
             }
         });
         
-        // จัดลำดับไพ่ (สุ่ม หรือ เรียง)
         if(fcSettings.orderMode === 'random') {
             deck.sort(() => Math.random() - 0.5);
         } else {
@@ -758,7 +774,7 @@
     }
 
     function backToSetup() {
-        if(confirm("ต้องการกลับไปตั้งค่าใหม่ใช่หรือไม่? (ความคืบหน้าปัจจุบันจะถูกลบ)")) {
+        if(confirm(currentLang === 'th' ? "ต้องการกลับไปตั้งค่าใหม่ใช่หรือไม่? (ความคืบหน้าปัจจุบันจะถูกลบ)" : "Are you sure you want to go back to settings? (Current progress will be lost)")) {
             localStorage.removeItem('jpMasterCards2');
             resetFlashcards();
         }
@@ -807,8 +823,8 @@
         document.getElementById('fc-card').classList.remove('flipped');
         document.getElementById('fc-actions').classList.remove('show');
         
-        document.getElementById('fc-map').style.transform = "scale(1)"; 
-        setTimeout(() => drawMiniMap('fc-map', c.pref.id, c.reg.color || '#54a0ff', c.rIdx), 50);
+        btnResetZoom('fc-map-div');
+        drawMiniMap('fc-map-div', c.pref.id, c.reg.color || '#54a0ff', c.rIdx);
     }
 
     function toggleFlip() {
@@ -853,8 +869,7 @@
         if (regionIdx === -1) { japanData.forEach(r => r.prefectures.forEach(p => gameQueue.push(p))); } 
         else { japanData[regionIdx].prefectures.forEach(p => gameQueue.push(p)); }
         gameQueue.sort(() => Math.random() - 0.5);
-        
-        autoZoomRegion('game-map-div', regionIdx); 
+        autoZoomRegion('game-map-div', regionIdx);
         nextGameQuestion();
     }
     function nextGameQuestion() {
