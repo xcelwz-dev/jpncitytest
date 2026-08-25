@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Japanese City Kanji</title>
+    <title>Japan Prefectures: Ultimate</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -35,17 +35,18 @@
         }
 
         * { box-sizing: border-box; transition: background 0.3s ease, color 0.3s ease, border-color 0.3s ease; }
-        
         body { font-family: 'Kanit', sans-serif; background: var(--bg-page); color: var(--text-main); margin: 0; padding: 20px; display: flex; justify-content: center; overflow-x: hidden; }
         .jp-text { font-family: 'Noto Sans JP', sans-serif; }
 
         .container { width: 100%; max-width: 900px; background: var(--bg-card); padding: 40px; border-radius: var(--radius); box-shadow: var(--shadow); position: relative; }
 
+        /* ส่วนหัวและปุ่มตั้งค่า */
         .header-box { text-align: center; margin-bottom: 30px; }
         h1 { margin: 0 0 5px 0; font-weight: 600; font-size: 28px; }
         
-        .theme-btn { position: absolute; top: 30px; right: 30px; background: var(--bg-page); border: none; font-size: 20px; cursor: pointer; color: var(--text-main); width: 45px; height: 45px; border-radius: 50%; display: flex; justify-content: center; align-items: center;}
-        .theme-btn:hover { background: var(--border); }
+        .top-controls { position: absolute; top: 25px; right: 25px; display: flex; gap: 10px; }
+        .ctrl-btn { background: var(--bg-page); border: 1px solid var(--border); font-size: 14px; cursor: pointer; color: var(--text-main); padding: 8px 15px; border-radius: 20px; font-family: inherit; font-weight: 500; box-shadow: 0 2px 10px rgba(0,0,0,0.02);}
+        .ctrl-btn:hover { border-color: var(--primary); color: var(--primary); }
 
         .nav-tabs { display: flex; justify-content: center; background: var(--bg-page); padding: 6px; border-radius: 30px; margin-bottom: 30px; gap: 5px; flex-wrap: wrap; }
         .tab-btn { padding: 12px 25px; border: none; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 15px; font-weight: 500; border-radius: 25px; font-family: inherit;}
@@ -66,27 +67,13 @@
 
         /* ================= ระบบแผนที่ & ซูม ================= */
         .map-wrapper { position: relative; width: 100%; height: 500px; border-radius: var(--radius); background: var(--bg-page); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; touch-action: none; }
-        
         .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
         .zoom-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); width: 35px; height: 35px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .zoom-btn:hover { background: var(--border); color: var(--primary); }
         .zoom-reset { font-size: 12px; width: auto; padding: 0 10px; font-family: inherit;}
-
         .map-box { width: 100%; height: 100%; transform-origin: center center; }
 
-        /* ================= ป้ายเลขลำดับ (Number Badge) ================= */
-        .pref-number {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            font-size: 11px;
-            font-weight: 500;
-            color: var(--text-muted);
-            background: rgba(131, 149, 167, 0.15); /* สีพื้นหลังโปร่งแสงจางๆ */
-            padding: 3px 8px;
-            border-radius: 8px;
-        }
-
+        .pref-number { position: absolute; top: 12px; left: 12px; font-size: 11px; font-weight: 500; color: var(--text-muted); background: rgba(131, 149, 167, 0.15); padding: 3px 8px; border-radius: 8px; }
         .pref-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 15px; }
         .pref-card { position: relative; background: var(--bg-page); border: 1px solid transparent; border-radius: 16px; padding: 30px 15px 20px 15px; text-align: center; cursor: pointer; }
         .pref-card:hover { border-color: var(--primary); transform: translateY(-3px); background: var(--bg-card); box-shadow: var(--shadow); }
@@ -126,8 +113,8 @@
         @media (max-width: 768px) {
             body { padding: 10px; }
             .container { padding: 25px 20px; border-radius: 20px; }
-            .theme-btn { top: 20px; right: 20px; width: 40px; height: 40px; font-size: 18px; }
-            h1 { font-size: 24px; }
+            .top-controls { top: 20px; right: 20px; }
+            h1 { font-size: 22px; margin-top: 40px; } /* หลบปุ่มด้านบน */
             .map-wrapper { height: 350px; }
             .pref-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
             .pref-card { padding: 25px 10px 15px 10px; }
@@ -143,11 +130,14 @@
 <body>
 
 <div class="container">
-    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">🌙</button>
+    <div class="top-controls">
+        <button class="ctrl-btn" onclick="toggleLang()" id="lang-btn">🇬🇧 EN</button>
+        <button class="ctrl-btn" onclick="toggleTheme()" id="theme-btn" style="border-radius: 50%; width:36px; padding:0; display:flex; justify-content:center;">🌙</button>
+    </div>
     
     <div class="header-box">
-        <h1>Japan Prefectures</h1>
-        <div style="color: var(--text-muted); font-size: 15px;">เรียนรู้แผนที่และท่องจำจังหวัดญี่ปุ่น</div>
+        <h1 id="ui-title">Japan Prefectures</h1>
+        <div style="color: var(--text-muted); font-size: 15px;" id="ui-subtitle">เรียนรู้แผนที่และท่องจำจังหวัดญี่ปุ่น</div>
     </div>
     
     <div class="nav-tabs">
@@ -177,27 +167,25 @@
     <div id="flashcard-area">
         <div class="fc-header">
             <div id="fc-progress" style="color: var(--text-muted); font-size: 14px;"></div>
-            <button class="undo-btn" id="fc-undo-btn" onclick="undoCard(event)">↩ ย้อนกลับ</button>
+            <button class="undo-btn" id="fc-undo-btn" onclick="undoCard(event)">↩ Undo</button>
         </div>
         
         <div id="fc-completed" style="display:none; padding: 40px 0;">
             <h2 style="font-size: 50px; margin: 0;">🎉</h2>
-            <h3>ท่องจำจบแล้ว!</h3>
-            <button class="tab-btn active" style="margin-top:10px; background: var(--primary); color:white;" onclick="initFlashcards(true)">เริ่มใหม่</button>
+            <h3 id="ui-fc-end">ท่องจำจบแล้ว!</h3>
+            <button class="tab-btn active" style="margin-top:10px; background: var(--primary); color:white;" id="ui-btn-restart" onclick="initFlashcards(true)">เริ่มใหม่</button>
         </div>
 
         <div class="fc-container" id="fc-container" onclick="toggleFlip()">
             <div class="fc-card" id="fc-card">
                 <div class="fc-face fc-front">
-                    <!-- ป้ายเลขลำดับในการ์ด -->
                     <div class="pref-number" id="fc-num" style="top: 15px; left: 15px;"></div>
-                    
                     <div class="jp-text" style="font-size: 65px; font-weight: bold;" id="fc-kanji"></div>
                     <div style="font-size: 20px; color: var(--text-muted);" id="fc-romaji"></div>
                     <button style="margin-top:20px; background:var(--bg-page); border:none; border-radius:50%; width:50px; height:50px; font-size:20px; cursor:pointer;" onclick="playSound(currentWord, event)">🔊</button>
                 </div>
                 <div class="fc-face fc-back">
-                    <div style="font-size: 22px; font-weight: 500; color: var(--primary); margin-bottom: 10px;" id="fc-thai"></div>
+                    <div style="font-size: 22px; font-weight: 500; color: var(--primary); margin-bottom: 10px;" id="fc-lang-name"></div>
                     <div class="jp-text" style="font-size: 20px; color: var(--text-main);" id="fc-region"></div>
                     <div class="map-box" id="fc-map" style="height: 160px; margin-top: 15px; border-radius: 12px; margin-bottom:0; border: 1px solid var(--border);"></div>
                 </div>
@@ -205,8 +193,8 @@
         </div>
         
         <div class="fc-actions" id="fc-actions">
-            <button class="btn-ans" style="background: var(--danger);" onclick="ansCard(false, event)">จำไม่ได้ ❌</button>
-            <button class="btn-ans" style="background: var(--success);" onclick="ansCard(true, event)">จำได้แล้ว ✅</button>
+            <button class="btn-ans" id="ui-btn-no" style="background: var(--danger);" onclick="ansCard(false, event)">จำไม่ได้ ❌</button>
+            <button class="btn-ans" id="ui-btn-yes" style="background: var(--success);" onclick="ansCard(true, event)">จำได้แล้ว ✅</button>
         </div>
     </div>
 
@@ -232,31 +220,95 @@
 <!-- ================= Popup Modal ================= -->
 <div class="modal-overlay" id="pref-modal" onclick="closeModal(event)">
     <div class="modal-content" onclick="event.stopPropagation()">
-        <!-- ป้ายเลขลำดับใน Modal -->
         <div class="pref-number" id="modal-num" style="top: 15px; left: 15px;"></div>
         <button class="close-btn" onclick="closeModal(event)">×</button>
         
         <h2 class="jp-text" id="modal-kanji" style="font-size: 34px; margin: 0 0 5px 0; padding-top: 10px;"></h2>
         <div style="font-size: 16px; color: var(--text-muted); margin-bottom: 5px;">
-            <span id="modal-romaji"></span> <span id="modal-thai" style="color:var(--primary); font-weight:500;"></span>
+            <span id="modal-romaji"></span> <span id="modal-lang-name" style="color:var(--primary); font-weight:500;"></span>
         </div>
         <div style="font-size: 15px; margin-bottom: 15px;">📍 <b id="modal-region"></b></div>
         
-        <div style="font-size: 13px; color: var(--text-muted); margin-top:15px;">ลำดับเส้นคันจิ (KanjiVG)</div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-top:15px;" id="ui-modal-stroke">ลำดับเส้นคันจิ (KanjiVG)</div>
         <div class="kanji-stroke-box" id="modal-stroke"></div>
         <a href="#" target="_blank" class="jisho-link" id="jisho-link">📖 ดูความหมายลึกซึ้งใน Jisho.org</a>
 
         <div class="map-box" id="modal-map" style="height: 150px; margin-bottom:0; border-radius: 12px; border: 1px solid var(--border);"></div>
 
         <div class="modal-nav">
-            <button class="nav-modal-btn" id="btn-prev-modal" onclick="navigateModal(-1)">◀ ก่อนหน้า</button>
+            <button class="nav-modal-btn" id="btn-prev-modal" onclick="navigateModal(-1)">◀ Prev</button>
             <div style="font-size: 13px; color: var(--text-muted);" id="modal-counter">1 / 47</div>
-            <button class="nav-modal-btn" id="btn-next-modal" onclick="navigateModal(1)">ถัดไป ▶</button>
+            <button class="nav-modal-btn" id="btn-next-modal" onclick="navigateModal(1)">Next ▶</button>
         </div>
     </div>
 </div>
 
 <script>
+    // ================= ระบบภาษา (i18n) =================
+    const dict = {
+        th: {
+            title: "Japan Prefectures", subtitle: "เรียนรู้แผนที่และท่องจำจังหวัดญี่ปุ่น",
+            tabStudy: "🗺️ เรียนรู้", tabFlashcard: "🗂️ ท่องจำ", tabGame: "🎮 เกมแผนที่",
+            filterAll: "ทั่วประเทศ", gridTitleAll: "ทุกจังหวัด (47)", gridTitleReg: (reg, num) => `ภูมิภาค ${reg} (${num} จังหวัด)`,
+            modalStroke: "ลำดับเส้นคันจิ (KanjiVG)", modalJisho: "📖 ดูความหมายลึกซึ้งใน Jisho.org",
+            btnPrev: "◀ ก่อนหน้า", btnNext: "ถัดไป ▶", btnUndo: "↩ ย้อนกลับ",
+            fcProgress: (left) => `เหลืออีก ${left} ใบ`, fcEnd: "ท่องจำจบแล้ว!", btnRestart: "เริ่มใหม่",
+            btnNo: "จำไม่ได้ ❌", btnYes: "จำได้แล้ว ✅",
+            gamePrompt: "เลือกระดับความยากด้านบน", gamePromptTarget: (k, r) => `📍 จงหา: <span class="jp-text">${k}</span> (${r})`, gameEnd: "🎉 สุดยอด! เติมแผนที่ครบแล้ว",
+            gameHintClick: "คลิกที่ตำแหน่งของจังหวัดนี้บนแผนที่", gameHintRight: "✅ ถูกต้อง!", gameHintWrong: (k) => `❌ ผิด! นั่นคือ ${k}`, gameHintEnd: "เลือกภูมิภาคด้านบนเพื่อเล่นอีกครั้ง"
+        },
+        en: {
+            title: "Japan Prefectures", subtitle: "Learn and memorize Japanese prefectures map",
+            tabStudy: "🗺️ Study", tabFlashcard: "🗂️ Flashcards", tabGame: "🎮 Map Game",
+            filterAll: "All Regions", gridTitleAll: "All Prefectures (47)", gridTitleReg: (reg, num) => `${reg} Region (${num} Prefectures)`,
+            modalStroke: "Kanji Stroke Order (KanjiVG)", modalJisho: "📖 View details on Jisho.org",
+            btnPrev: "◀ Prev", btnNext: "Next ▶", btnUndo: "↩ Undo",
+            fcProgress: (left) => `${left} cards remaining`, fcEnd: "All Memorized!", btnRestart: "Restart",
+            btnNo: "Don't Know ❌", btnYes: "Got it ✅",
+            gamePrompt: "Select a region above to start", gamePromptTarget: (k, r) => `📍 Find: <span class="jp-text">${k}</span> (${r})`, gameEnd: "🎉 Awesome! Map completed",
+            gameHintClick: "Click the location on the map", gameHintRight: "✅ Correct!", gameHintWrong: (k) => `❌ Wrong! That is ${k}`, gameHintEnd: "Select a region above to play again"
+        }
+    };
+
+    let currentLang = localStorage.getItem('jpLang') || 'th';
+
+    function toggleLang() {
+        currentLang = currentLang === 'th' ? 'en' : 'th';
+        localStorage.setItem('jpLang', currentLang);
+        applyLanguage();
+    }
+
+    function applyLanguage() {
+        document.getElementById('lang-btn').innerText = currentLang === 'th' ? '🇬🇧 EN' : '🇹🇭 TH';
+        const d = dict[currentLang];
+        
+        document.getElementById('ui-title').innerText = d.title;
+        document.getElementById('ui-subtitle').innerText = d.subtitle;
+        document.getElementById('nav-study').innerText = d.tabStudy;
+        document.getElementById('nav-flashcard').innerText = d.tabFlashcard;
+        document.getElementById('nav-game').innerText = d.tabGame;
+        document.getElementById('ui-fc-end').innerText = d.fcEnd;
+        document.getElementById('ui-btn-restart').innerText = d.btnRestart;
+        document.getElementById('ui-btn-no').innerText = d.btnNo;
+        document.getElementById('ui-btn-yes').innerText = d.btnYes;
+        document.getElementById('fc-undo-btn').innerText = d.btnUndo;
+        document.getElementById('ui-modal-stroke').innerText = d.modalStroke;
+        document.getElementById('jisho-link').innerText = d.modalJisho;
+        document.getElementById('btn-prev-modal').innerText = d.btnPrev;
+        document.getElementById('btn-next-modal').innerText = d.btnNext;
+        
+        if(!isGameRunning) document.getElementById('game-prompt').innerText = d.gamePrompt;
+        
+        // Re-render UI elements
+        renderFilters('region-filters', selectStudyFilter);
+        renderFilters('game-filters', startGame);
+        selectStudyFilter(currentFilterIdx);
+        if(document.getElementById('flashcard-area').style.display !== 'none') showCard();
+    }
+
+    function getPrefName(pref) { return currentLang === 'th' && pref.thai ? pref.thai : pref.romaji; }
+    function getRegName(reg) { return currentLang === 'th' && reg.thai ? reg.thai : reg.romaji.split(' ')[0]; }
+
     // ================= ระบบธีม =================
     const savedTheme = localStorage.getItem('jpMasterTheme');
     if (savedTheme) {
@@ -275,10 +327,10 @@
         if(document.getElementById('game-area').style.display !== 'none' && isGameRunning) redrawGameMap();
     }
 
-    // ================= ระบบซูม & ลากเลื่อน =================
+    // ================= ระบบซูม & ลากเลื่อน (เพิ่ม 2-finger Pinch Zoom) =================
     const mapStates = {
-        'japan-map-div': { scale: 1, x: 0, y: 0, panning: false, startX: 0, startY: 0 },
-        'game-map-div': { scale: 1, x: 0, y: 0, panning: false, startX: 0, startY: 0 }
+        'japan-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 },
+        'game-map-div': { scale: 1, x: 0, y: 0, panning: false, isPinching: false, startX: 0, startY: 0, startDist: 0, startScale: 1 }
     };
 
     function enablePanZoom(wrapperId, mapId) {
@@ -288,10 +340,11 @@
 
         wrapper.style.cursor = "grab";
         function applyTransform(smooth = false) {
-            map.style.transition = smooth ? "transform 0.15s ease-out" : "none";
+            map.style.transition = smooth ? "transform 0.2s ease-out" : "none";
             map.style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
         }
 
+        // Mouse Events
         wrapper.addEventListener('mousedown', (e) => {
             s.panning = true; s.startX = e.clientX - s.x; s.startY = e.clientY - s.y;
             wrapper.style.cursor = "grabbing";
@@ -304,21 +357,40 @@
             applyTransform();
         });
 
+        // Touch Events (Pinch to zoom + Pan)
         wrapper.addEventListener('touchstart', (e) => {
             if(e.touches.length === 1) {
-                s.panning = true; s.startX = e.touches[0].clientX - s.x; s.startY = e.touches[0].clientY - s.y;
+                s.panning = true; s.isPinching = false;
+                s.startX = e.touches[0].clientX - s.x; s.startY = e.touches[0].clientY - s.y;
+            } else if (e.touches.length === 2) {
+                s.panning = false; s.isPinching = true;
+                s.startDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                s.startScale = s.scale;
             }
+        }, {passive: false});
+        
+        wrapper.addEventListener('touchend', (e) => {
+            if (e.touches.length < 2) s.isPinching = false;
+            if (e.touches.length === 0) s.panning = false;
         });
-        wrapper.addEventListener('touchend', () => { s.panning = false; });
+        
         wrapper.addEventListener('touchmove', (e) => {
-            if (!s.panning || e.touches.length !== 1) return;
-            s.x = e.touches[0].clientX - s.startX; s.y = e.touches[0].clientY - s.startY;
-            applyTransform();
-        });
+            if (e.touches.length === 1 && s.panning) {
+                s.x = e.touches[0].clientX - s.startX; s.y = e.touches[0].clientY - s.startY;
+                applyTransform();
+            } else if (e.touches.length === 2 && s.isPinching) {
+                e.preventDefault(); // กันหน้าเว็บเลื่อนตอนถ่างซูม
+                let currDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+                let scaleDelta = currDist / s.startDist;
+                s.scale = Math.min(Math.max(1, s.startScale * scaleDelta), 4);
+                applyTransform();
+            }
+        }, {passive: false});
 
+        // Scroll Mouse Zoom
         wrapper.addEventListener('wheel', (e) => {
             e.preventDefault(); 
-            const zoomStep = 0.15;
+            const zoomStep = 0.2;
             if (e.deltaY < 0) s.scale += zoomStep; 
             else s.scale -= zoomStep; 
             s.scale = Math.min(Math.max(1, s.scale), 4);
@@ -329,8 +401,7 @@
 
     function btnZoom(step, mapId) {
         let s = mapStates[mapId];
-        s.scale += step;
-        s.scale = Math.min(Math.max(1, s.scale), 4);
+        s.scale += step; s.scale = Math.min(Math.max(1, s.scale), 4);
         if(s.scale === 1) { s.x = 0; s.y = 0; }
         document.getElementById(mapId).style.transition = "transform 0.2s ease-out";
         document.getElementById(mapId).style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
@@ -343,16 +414,41 @@
         document.getElementById(mapId).style.transform = `translate(0px, 0px) scale(1)`;
     }
 
+    // ================= Auto-Zoom ภูมิภาค =================
+    // กำหนดพิกัดคร่าวๆ สำหรับซูมเข้าแต่ละภูมิภาค (ปรับจูนเพื่อให้ภาพสวยบนมือถือและคอม)
+    const regionZoomParams = {
+        0: { scale: 1.8, x: -100, y: 150 }, // Hokkaido
+        1: { scale: 2.2, x: -60, y: 60 },   // Tohoku
+        2: { scale: 3.5, x: -80, y: -60 },  // Kanto
+        3: { scale: 2.5, x: 0, y: -20 },    // Chubu
+        4: { scale: 3.0, x: 80, y: -50 },   // Kansai
+        5: { scale: 2.5, x: 150, y: -100 }, // Chugoku
+        6: { scale: 3.0, x: 100, y: -150 }, // Shikoku
+        7: { scale: 2.5, x: 220, y: -200 }  // Kyushu
+    };
+
+    function autoZoomRegion(mapId, rIdx) {
+        if(rIdx === -1) { btnResetZoom(mapId); return; }
+        let params = regionZoomParams[rIdx];
+        if(params) {
+            let s = mapStates[mapId];
+            let isMobile = window.innerWidth <= 768;
+            s.scale = params.scale;
+            // ปรับระยะเลื่อนเล็กน้อยสำหรับมือถือ
+            s.x = params.x * (isMobile ? 0.6 : 1);
+            s.y = params.y * (isMobile ? 0.6 : 1);
+            
+            document.getElementById(mapId).style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
+            document.getElementById(mapId).style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
+        }
+    }
+
     // ================= เริ่มต้นระบบ =================
-    let currentFilterIdx = -1;
-    let currentDisplayList = []; 
-    let currentModalIndex = 0;
+    let currentFilterIdx = -1, currentDisplayList = [], currentModalIndex = 0;
     
     google.charts.load('current', { 'packages': ['geochart'] });
     google.charts.setOnLoadCallback(() => {
-        renderFilters('region-filters', selectStudyFilter);
-        renderFilters('game-filters', startGame);
-        selectStudyFilter(-1);
+        applyLanguage();
         enablePanZoom('study-map-wrapper', 'japan-map-div');
         enablePanZoom('game-map-wrapper', 'game-map-div');
     });
@@ -370,28 +466,21 @@
         if(tab === 'game' && !isGameRunning) drawEmptyGameMap();
     }
 
-    function playSound(word, e) {
-        if(e) e.stopPropagation();
-        const utterance = new SpeechSynthesisUtterance(word);
-        utterance.lang = 'ja-JP'; utterance.rate = 0.85;
-        window.speechSynthesis.speak(utterance);
-    }
-
     // ================= โหมดเรียนรู้ =================
     function renderFilters(containerId, callback) {
         const container = document.getElementById(containerId);
         container.innerHTML = '';
         let btnAll = document.createElement('div');
         btnAll.className = 'filter-btn active';
-        btnAll.innerHTML = `<div class="kanji">ทั่วประเทศ</div><div class="romaji">All Japan</div>`;
-        btnAll.onclick = () => { setActiveFilter(container, btnAll); callback(-1); };
+        btnAll.innerHTML = `<div class="kanji">${dict[currentLang].filterAll}</div><div class="romaji">All Japan</div>`;
+        btnAll.onclick = () => { setActiveFilter(container, btnAll); callback(-1); autoZoomRegion(containerId.includes('game') ? 'game-map-div' : 'japan-map-div', -1); };
         container.appendChild(btnAll);
 
         japanData.forEach((reg, idx) => {
             let btn = document.createElement('div');
             btn.className = 'filter-btn jp-text';
-            btn.innerHTML = `<div class="kanji">${reg.region.split(' ')[0]}</div><div class="romaji">${reg.romaji.split(' ')[0]}</div>`;
-            btn.onclick = () => { setActiveFilter(container, btn); callback(idx); };
+            btn.innerHTML = `<div class="kanji">${getRegName(reg)}</div><div class="romaji">${reg.romaji.split(' ')[0]}</div>`;
+            btn.onclick = () => { setActiveFilter(container, btn); callback(idx); autoZoomRegion(containerId.includes('game') ? 'game-map-div' : 'japan-map-div', idx); };
             container.appendChild(btn);
         });
     }
@@ -410,8 +499,9 @@
         });
         drawMainMap(idx);
         renderPrefectureList();
-        document.getElementById('grid-title').innerText = idx === -1 ? 'ทุกจังหวัด (47)' : `ภูมิภาค ${japanData[idx].thai} (${japanData[idx].prefectures.length} จังหวัด)`;
-        btnResetZoom('japan-map-div'); 
+        
+        let titleText = idx === -1 ? dict[currentLang].gridTitleAll : dict[currentLang].gridTitleReg(getRegName(japanData[idx]), japanData[idx].prefectures.length);
+        document.getElementById('grid-title').innerText = titleText;
     }
 
     let mapIndexLookup = [];
@@ -453,7 +543,6 @@
         currentDisplayList.forEach((item, index) => {
             let div = document.createElement('div');
             div.className = 'pref-card';
-            // เพิ่มป้ายตัวเลข
             let pNum = String(item.pref.id).padStart(2, '0');
             div.innerHTML = `
                 <div class="pref-number">${pNum}</div>
@@ -471,13 +560,11 @@
         let data = currentDisplayList[currentModalIndex];
         let pref = data.pref, reg = data.reg;
         
-        let pNum = String(pref.id).padStart(2, '0');
-        document.getElementById('modal-num').innerText = pNum;
-
+        document.getElementById('modal-num').innerText = String(pref.id).padStart(2, '0');
         document.getElementById('modal-kanji').innerText = pref.kanji;
         document.getElementById('modal-romaji').innerText = pref.romaji;
-        document.getElementById('modal-thai').innerText = pref.thai ? `(${pref.thai})` : '';
-        document.getElementById('modal-region').innerText = `${reg.region} ${reg.thai ? `(${reg.thai})` : ''}`;
+        document.getElementById('modal-lang-name').innerText = currentLang === 'th' && pref.thai ? `(${pref.thai})` : '';
+        document.getElementById('modal-region').innerText = `${reg.region} ${currentLang === 'th' && reg.thai ? `(${reg.thai})` : ''}`;
         document.getElementById('jisho-link').href = `https://jisho.org/search/${pref.kanji}%20%23kanji`;
 
         const strokeBox = document.getElementById('modal-stroke');
@@ -558,9 +645,9 @@
         document.getElementById('fc-num').innerText = String(c.pref.id).padStart(2, '0');
         document.getElementById('fc-kanji').innerText = c.pref.kanji;
         document.getElementById('fc-romaji').innerText = c.pref.romaji;
-        document.getElementById('fc-thai').innerText = c.pref.thai || '';
+        document.getElementById('fc-lang-name').innerText = getPrefName(c.pref);
         document.getElementById('fc-region').innerText = `${c.reg.region}`;
-        document.getElementById('fc-progress').innerText = `เหลืออีก ${deck.length} ใบ`;
+        document.getElementById('fc-progress').innerText = dict[currentLang].fcProgress(deck.length);
 
         isFlipped = false;
         document.getElementById('fc-card').classList.remove('flipped');
@@ -589,12 +676,8 @@
         if (e) e.stopPropagation();
         if (historyDeck.length === 0) return;
         let lastAction = historyDeck.pop();
-        if (lastAction.know) {
-            deck.unshift(lastAction.card); 
-        } else {
-            deck.pop(); 
-            deck.unshift(lastAction.card); 
-        }
+        if (lastAction.know) deck.unshift(lastAction.card); 
+        else { deck.pop(); deck.unshift(lastAction.card); }
         localStorage.setItem('jpMasterCards', JSON.stringify(deck));
         localStorage.setItem('jpMasterHistory', JSON.stringify(historyDeck));
         showCard();
@@ -614,20 +697,19 @@
         if (regionIdx === -1) { japanData.forEach(r => r.prefectures.forEach(p => gameQueue.push(p))); } 
         else { japanData[regionIdx].prefectures.forEach(p => gameQueue.push(p)); }
         gameQueue.sort(() => Math.random() - 0.5);
-        btnResetZoom('game-map-div'); 
         nextGameQuestion();
     }
     function nextGameQuestion() {
         if (gameQueue.length === 0) {
-            document.getElementById('game-prompt').innerHTML = "🎉 สุดยอด! เติมแผนที่ครบแล้ว";
-            document.getElementById('game-hint').innerHTML = "เลือกภูมิภาคด้านบนเพื่อเล่นอีกครั้ง";
+            document.getElementById('game-prompt').innerHTML = dict[currentLang].gameEnd;
+            document.getElementById('game-hint').innerHTML = dict[currentLang].gameHintEnd;
             document.getElementById('game-prompt').style.color = "var(--success)";
             redrawGameMap(); isGameRunning = false; return;
         }
         gameCurrentTarget = gameQueue.pop();
-        document.getElementById('game-prompt').innerHTML = `📍 จงหา: <span class="jp-text">${gameCurrentTarget.kanji}</span> (${gameCurrentTarget.romaji})`;
+        document.getElementById('game-prompt').innerHTML = dict[currentLang].gamePromptTarget(gameCurrentTarget.kanji, gameCurrentTarget.romaji);
         document.getElementById('game-prompt').style.color = "var(--primary)";
-        document.getElementById('game-hint').innerHTML = "คลิกที่ตำแหน่งของจังหวัดนี้บนแผนที่";
+        document.getElementById('game-hint').innerHTML = dict[currentLang].gameHintClick;
         document.getElementById('game-hint').style.color = "var(--text-muted)";
         playSound(gameCurrentTarget.kanji, null);
         redrawGameMap();
@@ -660,11 +742,11 @@
                 let clickedPref = mapLookup[sel[0].row];
                 if (clickedPref.id === gameCurrentTarget.id) {
                     gameCorrectIds.push(clickedPref.id);
-                    document.getElementById('game-hint').innerHTML = "✅ ถูกต้อง!";
+                    document.getElementById('game-hint').innerHTML = dict[currentLang].gameHintRight;
                     document.getElementById('game-hint').style.color = "var(--success)";
                     setTimeout(nextGameQuestion, 600);
                 } else {
-                    document.getElementById('game-hint').innerHTML = `❌ ผิด! นั่นคือ ${clickedPref.kanji}`;
+                    document.getElementById('game-hint').innerHTML = dict[currentLang].gameHintWrong(clickedPref.kanji);
                     document.getElementById('game-hint').style.color = "var(--danger)";
                 }
             }
