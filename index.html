@@ -40,7 +40,6 @@
 
         .container { width: 100%; max-width: 900px; background: var(--bg-card); padding: 40px; border-radius: var(--radius); box-shadow: var(--shadow); position: relative; }
 
-        /* ส่วนหัวและปุ่มตั้งค่า */
         .header-box { text-align: center; margin-bottom: 30px; }
         h1 { margin: 0 0 5px 0; font-weight: 600; font-size: 28px; }
         
@@ -65,15 +64,14 @@
         .filter-btn .kanji { font-size: 18px; font-weight: 600; margin-bottom: 2px; }
         .filter-btn .romaji { font-size: 12px; opacity: 0.9; }
 
-        /* ================= ระบบแผนที่ & ซูม (แก้ภาพเบลอ) ================= */
+        /* ================= ระบบแผนที่ & ซูม ================= */
         .map-wrapper { position: relative; width: 100%; height: 500px; border-radius: var(--radius); background: var(--bg-page); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; touch-action: none; }
         .zoom-controls { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 5px; z-index: 10; }
         .zoom-btn { background: var(--bg-card); border: 1px solid var(--border); color: var(--text-main); width: 35px; height: 35px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .zoom-btn:hover { background: var(--border); color: var(--primary); }
         .zoom-reset { font-size: 12px; width: auto; padding: 0 10px; font-family: inherit;}
         
-        /* ใส่ will-change ให้เบราว์เซอร์เตรียมหน่วยความจำสำหรับซูม ให้ภาพชัดไม่เบลอ */
-        .map-box { width: 100%; height: 100%; transform-origin: center center; will-change: transform; }
+        .map-box { width: 100%; height: 100%; transform-origin: center center; }
         .map-box path { vector-effect: non-scaling-stroke; }
 
         .pref-number { position: absolute; top: 12px; left: 12px; font-size: 11px; font-weight: 500; color: var(--text-muted); background: rgba(131, 149, 167, 0.15); padding: 3px 8px; border-radius: 8px; }
@@ -122,7 +120,6 @@
         
         .mini-map-wrap { position: relative; width: 100%; height: 160px; border-radius: 12px; border: 1px solid var(--border); overflow: hidden; background: var(--bg-page); touch-action: none; }
 
-        /* ================= Footer ================= */
         .footer-credit { text-align: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 14px; }
 
         /* ================= Responsive ================= */
@@ -183,7 +180,6 @@
 
     <!-- ================= โหมดท่องจำ ================= -->
     <div id="flashcard-area">
-        
         <div class="fc-setup-box" id="fc-setup-area">
             <h3 style="margin-top:0; text-align:center;" id="ui-fc-setup-title">ตั้งค่าแฟลชการ์ด</h3>
             <label id="ui-fc-lbl-deck">เลือกเด็ค (หมวดหมู่):</label>
@@ -228,7 +224,7 @@
                         <div class="jp-text" style="font-size: 26px; font-weight: bold; color: var(--primary); margin-bottom: 5px;" id="fc-back-main"></div>
                         <div style="font-size: 16px; color: var(--text-main); margin-bottom: 10px;" id="fc-region"></div>
                         
-                        <!-- Mini map ใน Flashcard ที่มีระบบซูม -->
+                        <!-- แผนที่ย่อยมีระบบ Pan/Zoom ใน Flashcard -->
                         <div class="mini-map-wrap" id="fc-map-wrapper" onclick="event.stopPropagation()">
                             <div class="zoom-controls" style="top: 5px; right: 5px;">
                                 <button class="zoom-btn" style="width: 25px; height: 25px; font-size: 14px;" onclick="btnZoom(0.3, 'fc-map-div', event)">+</button>
@@ -236,7 +232,6 @@
                             </div>
                             <div class="map-box" id="fc-map-div"></div>
                         </div>
-
                     </div>
                 </div>
             </div>
@@ -267,7 +262,6 @@
         </div>
     </div>
 
-    <!-- เครดิตผู้พัฒนา -->
     <div class="footer-credit">
         Developed by <strong>Chanin (KKU)</strong>
     </div>
@@ -496,36 +490,49 @@
     }
 
     // ================= Auto-Zoom Helper =================
-    const regionOrigins = {
-        0: "75% 20%", 1: "70% 40%", 2: "70% 55%", 3: "55% 55%",
-        4: "45% 65%", 5: "25% 65%", 6: "30% 75%", 7: "15% 80%"
+    // คำนวณพิกัดให้ Dynamic ไม่ตกขอบ
+    const regionZoomPercent = {
+        0: { scale: 1.8, x: -18, y: 28 }, // Hokkaido
+        1: { scale: 2.2, x: -10, y: 12 }, // Tohoku
+        2: { scale: 3.2, x: -18, y: -8 }, // Kanto
+        3: { scale: 2.8, x: -2,  y: -5 }, // Chubu
+        4: { scale: 3.2, x: 12,  y: -10 },// Kansai
+        5: { scale: 3.0, x: 25,  y: -15 },// Chugoku
+        6: { scale: 3.2, x: 18,  y: -25 },// Shikoku
+        7: { scale: 2.8, x: 30,  y: -35 } // Kyushu
     };
 
-    function autoZoomRegion(mapId, rIdx) {
+    function autoZoomMap(wrapperId, mapId, rIdx) {
         let mapEl = document.getElementById(mapId);
-        if(!mapEl) return;
+        let wrapperEl = document.getElementById(wrapperId);
+        if(!mapEl || !wrapperEl) return;
+        
+        let s = mapStates[mapId];
+        
         if(rIdx === -1) { 
-            mapEl.style.transition = "transform 0.4s ease";
-            mapEl.style.transform = `scale(1)`;
-            mapEl.style.transformOrigin = "center center";
-            return; 
+            s.scale = 1; s.x = 0; s.y = 0;
+        } else {
+            let params = regionZoomPercent[rIdx];
+            if(params) {
+                let w = wrapperEl.offsetWidth;
+                let h = wrapperEl.offsetHeight;
+                
+                s.scale = params.scale;
+                
+                // ถ้าย่อในกล่องเล็ก (Modal/Flashcard) ให้ซูมแรงขึ้นนิดหน่อย
+                if (mapId.includes('modal') || mapId.includes('fc')) {
+                    s.scale = params.scale * 1.4; 
+                }
+                
+                let scaleMult = s.scale / params.scale;
+                s.x = w * (params.x / 100) * scaleMult;
+                s.y = h * (params.y / 100) * scaleMult;
+            }
         }
-        mapEl.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
-        mapEl.style.transformOrigin = regionOrigins[rIdx];
-        mapEl.style.transform = `scale(2.5)`; 
-    }
-
-    function autoZoomMiniMap(mapId, rIdx) {
-        let mapEl = document.getElementById(mapId);
-        if(!mapEl) return;
-        if(rIdx === -1) { 
-            mapEl.style.transform = `scale(1)`;
-            mapEl.style.transformOrigin = "center center";
-            return; 
-        }
-        mapEl.style.transition = "transform 0.5s cubic-bezier(0.25, 1, 0.5, 1)";
-        mapEl.style.transformOrigin = regionOrigins[rIdx];
-        mapEl.style.transform = `scale(3.5)`;
+        
+        mapEl.style.transition = "transform 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+        mapEl.style.transformOrigin = "center center"; // ต้องลากจากตรงกลางเสมอ
+        mapEl.style.transform = `translate(${s.x}px, ${s.y}px) scale(${s.scale})`;
     }
 
     // ================= เริ่มต้นระบบ =================
@@ -567,14 +574,14 @@
         let btnAll = document.createElement('div');
         btnAll.className = 'filter-btn active';
         btnAll.innerHTML = `<div class="kanji">${dict[currentLang].filterAll}</div><div class="romaji">All Japan</div>`;
-        btnAll.onclick = () => { setActiveFilter(container, btnAll); callback(-1); autoZoomRegion(containerId.includes('game') ? 'game-map-div' : 'japan-map-div', -1); };
+        btnAll.onclick = () => { setActiveFilter(container, btnAll); callback(-1); autoZoomMap(containerId.includes('game') ? 'game-map-wrapper' : 'study-map-wrapper', containerId.includes('game') ? 'game-map-div' : 'japan-map-div', -1); };
         container.appendChild(btnAll);
 
         japanData.forEach((reg, idx) => {
             let btn = document.createElement('div');
             btn.className = 'filter-btn jp-text';
             btn.innerHTML = `<div class="kanji">${reg.kanji || reg.region.split(' ')[0]}</div><div class="romaji">${getRegPronunciation(reg)}</div>`;
-            btn.onclick = () => { setActiveFilter(container, btn); callback(idx); autoZoomRegion(containerId.includes('game') ? 'game-map-div' : 'japan-map-div', idx); };
+            btn.onclick = () => { setActiveFilter(container, btn); callback(idx); autoZoomMap(containerId.includes('game') ? 'game-map-wrapper' : 'study-map-wrapper', containerId.includes('game') ? 'game-map-div' : 'japan-map-div', idx); };
             container.appendChild(btn);
         });
     }
@@ -680,7 +687,7 @@
         document.getElementById('pref-modal').style.display = 'flex';
         
         btnResetZoom('modal-map-div');
-        drawMiniMap('modal-map-div', pref.id, reg.color || '#54a0ff', data.rIdx);
+        drawMiniMap('modal-map-div', pref.id, reg.color || '#54a0ff', data.rIdx, 'modal-map-wrapper');
     }
 
     function navigateModal(step) {
@@ -692,7 +699,7 @@
         if(e.target.id === 'pref-modal' || e.target.classList.contains('close-btn')) document.getElementById('pref-modal').style.display = 'none';
     }
 
-    function drawMiniMap(containerId, targetId, color, rIdx = -1) {
+    function drawMiniMap(containerId, targetId, color, rIdx = -1, wrapperId = null) {
         if (!google.visualization) return;
         let data = new google.visualization.DataTable();
         data.addColumn('string', 'Prefecture'); data.addColumn('number', 'Color');
@@ -702,7 +709,7 @@
         let chart = new google.visualization.GeoChart(document.getElementById(containerId));
         
         google.visualization.events.addListener(chart, 'ready', function () {
-             if (rIdx !== -1) setTimeout(() => autoZoomMiniMap(containerId, rIdx), 200);
+             if (rIdx !== -1 && wrapperId) setTimeout(() => autoZoomMap(wrapperId, containerId, rIdx), 200);
         });
         chart.draw(data, options);
     }
@@ -824,7 +831,7 @@
         document.getElementById('fc-actions').classList.remove('show');
         
         btnResetZoom('fc-map-div');
-        drawMiniMap('fc-map-div', c.pref.id, c.reg.color || '#54a0ff', c.rIdx);
+        drawMiniMap('fc-map-div', c.pref.id, c.reg.color || '#54a0ff', c.rIdx, 'fc-map-wrapper');
     }
 
     function toggleFlip() {
@@ -869,7 +876,7 @@
         if (regionIdx === -1) { japanData.forEach(r => r.prefectures.forEach(p => gameQueue.push(p))); } 
         else { japanData[regionIdx].prefectures.forEach(p => gameQueue.push(p)); }
         gameQueue.sort(() => Math.random() - 0.5);
-        autoZoomRegion('game-map-div', regionIdx);
+        autoZoomMap('game-map-wrapper', 'game-map-div', regionIdx);
         nextGameQuestion();
     }
     function nextGameQuestion() {
